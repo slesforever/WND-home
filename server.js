@@ -4,9 +4,16 @@ const express = require('express');
 const app = express();
 
 // ========================================================
-// 1. ANGELA WEB ENDPOINT (公開端點設定)
+// ⚙️ 核心配置（金鑰與頻道直接寫死在這裡）
 // ========================================================
+const ANGELA_TOKEN = "d39da4bcf2e20fa6e1f8e97f60817d597afc8a0cf2b9e8c308a88beaaf224840"; 
 
+// ⚠️ Bruh，請把下面這串「123456789012345678」改成你真正的 Discord 頻道 ID
+const DISCORD_CHANNEL_ID = "123456789012345678"; 
+
+// ========================================================
+// 1. 公開端點網址（讓網頁伺服器跑起來，給 GitHub Action 敲門用）
+// ========================================================
 app.get('/', (req, res) => {
   res.send('管理員，Angela 正在運行中。邊獄公司分部情報監控系統已就緒。');
 });
@@ -17,46 +24,39 @@ app.listen(port, () => {
 });
 
 // ========================================================
-// 2. ANGELA BOT CORE (機器人核心邏輯)
+// 2. ANGELA 機器人核心邏輯（10秒高頻巡邏）
 // ========================================================
-
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// 紀錄最後一次發布的訊息 ID，防止重啟時重複發送
 let lastSteamId = null;
 let lastTwitterId = null;
 
 client.once('ready', () => {
-  console.log(`[腦葉公司/邊獄分部] 監管者 Angela 已成功同步連線。`);
+  console.log(`[腦葉公司/邊獄分部] 監管者 Angela 已成功同步連線！`);
   
-  // 啟動高頻率巡邏：每 10000 毫秒 (10秒) 檢查一次最新消息
+  // 啟動高頻率巡邏：每 10000 毫秒 (10秒) 交叉檢查一次最新消息
   executePatrol();
   setInterval(executePatrol, 10000);
 });
 
-/**
- * 核心巡邏排程
- */
 async function executePatrol() {
   await checkSteamUpdates();
   await checkTwitterUpdates();
 }
 
 /**
- * 監控 Steam 官方公告
+ * 監控 Steam 官方公告 (Limbus Company)
  */
 async function checkSteamUpdates() {
   try {
-    // 呼叫 Steam 官方 API 獲取 Limbus Company (AppID: 1973530) 的最新 1 則公告
     const res = await fetch(`https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=1973530&count=1`);
     const data = await res.json();
     const latestNews = data.appnews.newsitems[0];
 
     if (!latestNews) return;
 
-    // 如果偵測到新文章 ID
     if (latestNews.gid !== lastSteamId) {
-      if (lastSteamId !== null) { // 確保不是機器人剛啟動時的舊公告
+      if (lastSteamId !== null) { 
         const imageUrl = extractSteamImg(latestNews.contents) || "https://images.mirror.tw/k8s-mirror-pub/2023/02/24/02e60f7e-128c-4a3a-a16f-7f78168e30b0-webp.jpg";
         await sendDiscordEmbed(
           'Limbus Company 官方公告 (Steam)',
@@ -78,23 +78,18 @@ async function checkSteamUpdates() {
  */
 async function checkTwitterUpdates() {
   try {
-    // 使用 RSSHub 的公開免認證 JSON 轉換端點，監控 LimbusCompany_B 帳號
-    // 這裡直接要求回傳 json 格式，比解析 xml 更加輕量且穩定
+    // 透過 RSSHub 公開 JSON 實例監控 LimbusCompany_B 推特
     const res = await fetch(`https://rsshub.app/twitter/user/LimbusCompany_B?format=json`);
+    if (!res.ok) return; 
     
-    if (!res.ok) return; // 遇到 RSSHub 節點繁忙時直接跳過，靜待下個 10 秒
     const data = await res.json();
     const latestTweet = data.items[0];
 
     if (!latestTweet) return;
 
-    // 比對推文唯一識別碼 (通常為網址或 id)
     if (latestTweet.id !== lastTwitterId) {
       if (lastTwitterId !== null) {
-        // 從 RSSHub 回傳的 html 內容中撈出推文附帶的第一張媒體圖片
         const imageUrl = extractTwitterImg(latestTweet.content_html) || "https://images.mirror.tw/k8s-mirror-pub/2023/02/24/02e60f7e-128c-4a3a-a16f-7f78168e30b0-webp.jpg";
-        
-        // 清理一下標題，避免太過冗長
         const cleanTitle = latestTweet.title.length > 60 ? latestTweet.title.substring(0, 60) + '...' : latestTweet.title;
 
         await sendDiscordEmbed(
@@ -117,11 +112,14 @@ async function checkTwitterUpdates() {
  */
 async function sendDiscordEmbed(authorName, title, url, imageUrl, description) {
   try {
-    const channel = await client.channels.fetch(process.env.CHANNEL_ID);
-    if (!channel) return;
+    const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
+    if (!channel) {
+      console.error(`[錯誤] 找不到頻道 ID: ${DISCORD_CHANNEL_ID}，請確認 ID 是否正確且機器人已被邀請進該伺服器。`);
+      return;
+    }
 
     const embed = new EmbedBuilder()
-      .setColor(0x820000) // 罪惡與奢華的標誌深紅色
+      .setColor(0x820000) // 邊獄深紅
       .setAuthor({ name: authorName })
       .setTitle(title)
       .setURL(url)
@@ -130,28 +128,22 @@ async function sendDiscordEmbed(authorName, title, url, imageUrl, description) {
       .setTimestamp();
 
     await channel.send({ embeds: [embed] });
-    console.log(`[發送成功] 已將最新消息推送至指定頻道。`);
+    console.log(`[發送成功] 已將最新消息推送至頻道。`);
   } catch (error) {
     console.error('[錯誤] 訊息發送失敗:', error.message);
   }
 }
 
-/**
- * 工具：解析 Steam BBCode 格式中的首張圖片 [img]url[/img]
- */
 function extractSteamImg(content) {
   const match = content.match(/\[img\](.*?)\[\/img\]/);
   return match ? match[1] : null;
 }
 
-/**
- * 工具：解析 HTML 字串中標籤的 src 屬性 (Twitter 圖片)
- */
 function extractTwitterImg(htmlContent) {
   if (!htmlContent) return null;
   const match = htmlContent.match(/<img[^>]+src="([^">]+)"/);
   return match ? match[1] : null;
 }
 
-// 讀取安全性環境變數並啟動 Angela
-client.login(process.env.TOKEN);
+// 🟢 拿著你給的金鑰，直接登入 Angela！
+client.login(ANGELA_TOKEN);
