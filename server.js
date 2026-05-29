@@ -4,15 +4,13 @@ const express = require('express');
 const app = express();
 
 // ========================================================
-// ⚙️ 核心配置（金鑰與頻道直接寫死在這裡）
+// ⚙️ 核心配置（已幫你將 Token 與 頻道 ID 完全寫死）
 // ========================================================
 const ANGELA_TOKEN = "d39da4bcf2e20fa6e1f8e97f60817d597afc8a0cf2b9e8c308a88beaaf224840"; 
-
-// ⚠️ Bruh，請把下面這串「123456789012345678」改成你真正的 Discord 頻道 ID
-const DISCORD_CHANNEL_ID = "123456789012345678"; 
+const DISCORD_CHANNEL_ID = "1402282604165730348"; 
 
 // ========================================================
-// 1. 公開端點網址（讓網頁伺服器跑起來，給 GitHub Action 敲門用）
+// 1. 公開端點網址（給 GitHub Action 鬧鐘敲門續命用）
 // ========================================================
 app.get('/', (req, res) => {
   res.send('管理員，Angela 正在運行中。邊獄公司分部情報監控系統已就緒。');
@@ -24,7 +22,7 @@ app.listen(port, () => {
 });
 
 // ========================================================
-// 2. ANGELA 機器人核心邏輯（10秒高頻巡邏）
+// 2. ANGELA 機器人核心邏輯（10秒高頻交叉巡邏）
 // ========================================================
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -114,7 +112,7 @@ async function sendDiscordEmbed(authorName, title, url, imageUrl, description) {
   try {
     const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
     if (!channel) {
-      console.error(`[錯誤] 找不到頻道 ID: ${DISCORD_CHANNEL_ID}，請確認 ID 是否正確且機器人已被邀請進該伺服器。`);
+      console.error(`[錯誤] 找不到頻道 ID: ${DISCORD_CHANNEL_ID}，請確認機器人已被邀請進該伺服器並擁有閱讀/發言權限。`);
       return;
     }
 
@@ -128,7 +126,7 @@ async function sendDiscordEmbed(authorName, title, url, imageUrl, description) {
       .setTimestamp();
 
     await channel.send({ embeds: [embed] });
-    console.log(`[發送成功] 已將最新消息推送至頻道。`);
+    console.log(`[發送成功] 已將最新消息推送至頻道 ${DISCORD_CHANNEL_ID}。`);
   } catch (error) {
     console.error('[錯誤] 訊息發送失敗:', error.message);
   }
@@ -145,5 +143,5 @@ function extractTwitterImg(htmlContent) {
   return match ? match[1] : null;
 }
 
-// 🟢 拿著你給的金鑰，直接登入 Angela！
+// 🟢 拿著金鑰直接登入
 client.login(ANGELA_TOKEN);
