@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCHALE // SENSEI PROFILE TERMINAL</title>
+  <style>
+    :root {
+      --ba-blue: #00A3FF;
+      --ba-blue-light: #66C8FF;
+      --ba-navy: #0B1B3D;
+      --ba-yellow: #FFC72C;
+      --ba-pink: #FF7FA2;
+      --ba-bg: #EAF4FA;
+      --ba-glass: rgba(255, 255, 255, 0.88);
+      --ba-border: rgba(0, 163, 255, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--ba-bg);
+      /* 夏萊終端方格背景 */
+      background-image: 
+        linear-gradient(rgba(0, 163, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 163, 255, 0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--ba-navy);
+    }
+
+    /* 背景畫布：數位方塊與光斑 */
+    #bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* 主應用容器 */
+    .app-container {
+      position: relative;
+      z-index: 10;
+      width: 880px;
+      max-width: 95vw;
+      height: 560px;
+      display: flex;
+      flex-direction: column;
+      perspective: 1000px;
+    }
+
+    /* 夏萊風格頂部列 */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: var(--ba-navy);
+      color: #fff;
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+      border-bottom: 3px solid var(--ba-blue);
+      margin-bottom: 8px;
+    }
+
+    .schale-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      font-size: 14px;
+    }
+
+    .schale-logo::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--ba-yellow);
+      transform: rotate(45deg);
+    }
+
+    .system-status {
+      font-size: 12px;
+      color: var(--ba-blue-light);
+      display: flex;
+      gap: 16px;
+      font-family: monospace;
+    }
+
+    /* 主卡片（玻璃擬態 + 斜切角） */
+    .main-card {
+      flex: 1;
+      background: var(--ba-glass);
+      backdrop-filter: blur(16px);
+      border: 2px solid var(--ba-border);
+      border-radius: 4px;
+      clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+      box-shadow: 0 16px 40px rgba(0, 163, 255, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      display: flex;
+      flex-direction: column;
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-out;
+      position: relative;
+    }
+
+    /* 頂部分頁標籤 */
+    .nav-tabs {
+      display: flex;
+      background: rgba(11, 27, 61, 0.05);
+      border-bottom: 2px solid rgba(0, 163, 255, 0.2);
+      padding: 0 16px;
+    }
+
+    .tab-btn {
+      padding: 14px 28px;
+      background: transparent;
+      border: none;
+      font-weight: 700;
+      color: #6a7b9b;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+
+    .tab-btn:hover {
+      color: var(--ba-blue);
+    }
+
+    .tab-btn.active {
+      color: var(--ba-navy);
+      background: #fff;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--ba-blue);
+    }
+
+    .tab-badge {
+      background: var(--ba-pink);
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    /* 內容區域 */
+    .content-container {
+      flex: 1;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page {
+      position: absolute;
+      top: 32px;
+      left: 32px;
+      right: 32px;
+      bottom: 32px;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      pointer-events: none;
+      display: flex;
+      gap: 24px;
+    }
+
+    .page.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    /* 頭像與光環側欄 */
+    .profile-sidebar {
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 20px;
+      border: 1px solid rgba(0, 163, 255, 0.2);
+      border-radius: 8px;
+    }
+
+    .halo-avatar {
+      width: 100px;
+      height: 100px;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    /* 浮動光环 (Halo) */
+    .halo {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 14px;
+      border: 3px solid var(--ba-blue);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--ba-blue);
+      animation: float-halo 3s ease-in-out infinite;
+    }
+
+    @keyframes float-halo {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-4px); }
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #cbe3f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: var(--ba-blue);
+      border: 3px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* 詳細資訊區 */
+    .profile-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .title-tag {
+      font-size: 11px;
+      background: var(--ba-blue);
+      color: #fff;
+      padding: 2px 8px;
+      display: inline-block;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    h2 {
+      font-size: 24px;
+      color: var(--ba-navy);
+      border-bottom: 2px solid var(--ba-blue-light);
+      padding-bottom: 8px;
+    }
+
+    p {
+      line-height: 1.6;
+      color: #4a5a7b;
+      font-size: 14px;
+    }
+
+    /* MomoTalk 聊天氣泡風格 */
+    .momotalk-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 163, 255, 0.05);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .momotalk-sender {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--ba-pink);
+      margin-bottom: 4px;
+    }
+
+    /* 點擊 Ripple 音效漣漪 */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid var(--ba-blue);
+      background: rgba(0, 163, 255, 0.1);
+      transform: scale(0);
+      animation: ripple-out 0.5s ease-out forwards;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    @keyframes ripple-out {
+      to {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+
+    /* 音樂控制器按鈕 */
+    .audio-control {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 20;
+    }
+
+    .btn-schale {
+      background: var(--ba-blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 12px rgba(0, 163, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-schale:hover {
+      background: #0088d6;
+    }
+
+    .btn-schale:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="app-container" id="app">
+    <!-- 頂部資訊列 -->
+    <div class="top-bar">
+      <div class="schale-logo">SCHALE TACTICAL TERMINAL</div>
+      <div class="system-status">
+        <span>A.R.O.N.A OS v2.4</span>
+        <span id="clock">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- 主面板 -->
+    <div class="main-card" id="card">
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchPage(0)">
+          <span>01 SENSEI</span>
+        </button>
+        <button class="tab-btn" onclick="switchPage(1)">
+          <span>02 MOMOTALK</span>
+          <span class="tab-badge">1</span>
+        </button>
+        <button class="tab-btn" onclick="switchPage(2)">
+          <span>03 ARCHIVE</span>
+        </button>
+      </nav>
+
+      <div class="content-container">
+        <!-- 頁面 1: 老師個人檔案 -->
+        <div class="page active">
+          <div class="profile-sidebar">
+            <div class="halo-avatar">
+              <div class="halo"></div>
+              <div class="avatar-img">SLES</div>
+            </div>
+            <span class="title-tag">SCHALE</span>
+            <strong style="margin-top: 8px; font-size: 14px;">Sles 老師</strong>
+            <span style="font-size: 11px; color: #8a9bbd;">聯邦搜查社</span>
+          </div>
+          <div class="profile-info">
+            <div>
+              <span class="title-tag">TEACHER PROFILE</span>
+              <h2>夏萊主管個人檔案</h2>
+            </div>
+            <p>歡迎回到夏萊辦公室，老師。阿羅娜已備妥奇普托斯今日的各項數據與通訊紀錄。</p>
+            <p>目前系統運作率 100%，已連接至地下地下室數據庫。隨時可以進行系統檢索與劇本編撰。</p>
+          </div>
+        </div>
+
+        <!-- 頁面 2: MomoTalk 風格通訊 -->
+        <div class="page">
+          <div class="profile-info" style="width: 100%;">
+            <div>
+              <span class="title-tag" style="background: var(--ba-pink);">MOMOTALK MESSAGES</span>
+              <h2>最新通訊紀錄</h2>
+            </div>
+            <div class="momotalk-box">
+              <div class="momotalk-sender">ARONA (主系統)</div>
+              <p>老師！今天的日程準備好了嗎？不要忘記審核遊戲開發部的最新企劃案喔！( • ̀ω•́ )</p>
+            </div>
+            <div class="momotalk-box">
+              <div class="momotalk-sender" style="color: var(--ba-blue);">PLANA (系統支援)</div>
+              <p>草稿備份已自動上傳至雲端伺服器。音效與介面模組運行穩定。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 頁面 3: 作品檔案庫 -->
+        <div class="page">
+          <div class="profile-info" style="width: 100%;">
+            <div>
+              <span class="title-tag">DATABASE</span>
+              <h2>奇普托斯檔案庫</h2>
+            </div>
+            <p>▸ 遊戲開發與 Luau 腳本邏輯庫</p>
+            <p>▸ 前端 UI / Web Audio 音效開發模組</p>
+            <p>▸ 黑暗風格故事與中世紀英雄企劃案</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 音樂開關按鈕 -->
+      <div class="audio-control">
+        <button class="btn-schale" onclick="toggleBgm()">
+          <span id="bgm-icon">♪</span> BGM SYSTEM
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 1. Web Audio API 音效合成器 (蔚藍檔案 MomoTalk & 科技 UI 聲) ---
+    let audioCtx = null;
+    let isBgmPlaying = false;
+    let bgmAudio = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSfx(type) {
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'click') {
+        // 清亮高頻 UI 點擊聲
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
+        
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        
+        osc.start(now);
+        osc.stop(now + 0.04);
+
+      } else if (type === 'momotalk') {
+        // 經典 MomoTalk 雙音階提示音 (C6 -> G6)
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+
+        osc.type = 'sine';
+        osc2.type = 'sine';
+
+        // 第一音
+        osc.frequency.setValueAtTime(1046.5, now); // C6
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        // 第二音
+        osc2.frequency.setValueAtTime(1567.98, now + 0.06); // G6
+        gain2.gain.setValueAtTime(0.15, now + 0.06);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        osc.start(now);
+        osc.stop(now + 0.08);
+        osc2.start(now + 0.06);
+        osc2.stop(now + 0.26);
+      }
+    }
+
+    function toggleBgm() {
+      playSfx('momotalk');
+      if (!bgmAudio) {
+        // 使用預設 Blue Archive 風格輕快背景音樂線路上源（可自訂替換）
+        bgmAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3');
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0.3;
+      }
+
+      if (isBgmPlaying) {
+        bgmAudio.pause();
+        isBgmPlaying = false;
+        document.getElementById('bgm-icon').innerText = '♪';
+      } else {
+        bgmAudio.play();
+        isBgmPlaying = true;
+        document.getElementById('bgm-icon').innerText = '❚❚';
+      }
+    }
+
+    // --- 2. 頁面切換邏輯 ---
+    function switchPage(index) {
+      playSfx('click');
+      const tabs = document.querySelectorAll('.tab-btn');
+      const pages = document.querySelectorAll('.page');
+
+      tabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+      pages.forEach((page, i) => page.classList.toggle('active', i === index));
+    }
+
+    // --- 3. 3D 卡片傾斜與點擊 Ripple 動畫 ---
+    const card = document.getElementById('card');
+    document.addEventListener('mousemove', (e) => {
+      const { innerWidth, innerHeight } = window;
+      const x = (e.clientX - innerWidth / 2) / (innerWidth / 2);
+      const y = (e.clientY - innerHeight / 2) / (innerHeight / 2);
+      card.style.transform = `rotateY(${x * 4}deg) rotateX(${-y * 4}deg)`;
+    });
+
+    document.addEventListener('click', (e) => {
+      initAudio();
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      ripple.style.left = `${e.clientX - 25}px`;
+      ripple.style.top = `${e.clientY - 25}px`;
+      ripple.style.width = '50px';
+      ripple.style.height = '50px';
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 500);
+    });
+
+    // --- 4. Canvas 蔚藍粒子（數位天藍方塊與柔光） ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 6 + 2,
+        speedY: -(Math.random() * 0.8 + 0.2),
+        speedX: (Math.random() - 0.5) * 0.5,
+        opacity: Math.random() * 0.5 + 0.2,
+        isSquare: Math.random() > 0.4
+      });
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+        if (p.y < -10) p.y = canvas.height + 10;
+        if (p.x < -10 || p.x > canvas.width + 10) p.x = Math.random() * canvas.width;
+
+        ctx.fillStyle = p.isSquare 
+          ? `rgba(0, 163, 255, ${p.opacity})` 
+          : `rgba(255, 255, 255, ${p.opacity + 0.2})`;
+
+        if (p.isSquare) {
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        } else {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // --- 5. 即時時鐘 ---
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
