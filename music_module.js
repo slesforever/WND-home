@@ -1,7 +1,7 @@
 (function () {
 
     /* =========================================================
-       DEFAULT PLAYLIST
+       DEFAULT TRACKS
     ========================================================= */
 
     const tracks = [
@@ -19,7 +19,7 @@
 
 
     /* =========================================================
-       PLAYER STATE
+       STATE
     ========================================================= */
 
     let player =
@@ -76,7 +76,7 @@
         );
 
 
-    const prevButton =
+    const previousButton =
         document.getElementById(
             "prev-track"
         );
@@ -101,7 +101,7 @@
 
 
     /* =========================================================
-       AUDIO CONTEXT
+       WEB AUDIO
     ========================================================= */
 
     let audioContext =
@@ -165,10 +165,11 @@
             ===================================================== */
 
             if (
-                type === "boot"
+                type ===
+                "boot"
             ) {
 
-                const osc =
+                const oscillator =
                     ctx.createOscillator();
 
 
@@ -176,17 +177,17 @@
                     ctx.createGain();
 
 
-                osc.type =
+                oscillator.type =
                     "sine";
 
 
-                osc.frequency.setValueAtTime(
+                oscillator.frequency.setValueAtTime(
                     180,
                     now
                 );
 
 
-                osc.frequency.exponentialRampToValueAtTime(
+                oscillator.frequency.exponentialRampToValueAtTime(
                     760,
                     now + .72
                 );
@@ -210,7 +211,7 @@
                 );
 
 
-                osc.connect(
+                oscillator.connect(
                     gain
                 );
 
@@ -220,18 +221,18 @@
                 );
 
 
-                osc.start(
+                oscillator.start(
                     now
                 );
 
 
-                osc.stop(
+                oscillator.stop(
                     now + 1.1
                 );
 
 
                 /*
-                 * Sparkle
+                 * 高頻光點
                  */
 
                 const sparkle =
@@ -303,10 +304,11 @@
             ===================================================== */
 
             if (
-                type === "click"
+                type ===
+                "click"
             ) {
 
-                const osc =
+                const oscillator =
                     ctx.createOscillator();
 
 
@@ -314,17 +316,17 @@
                     ctx.createGain();
 
 
-                osc.type =
+                oscillator.type =
                     "sine";
 
 
-                osc.frequency.setValueAtTime(
+                oscillator.frequency.setValueAtTime(
                     640,
                     now
                 );
 
 
-                osc.frequency.exponentialRampToValueAtTime(
+                oscillator.frequency.exponentialRampToValueAtTime(
                     360,
                     now + .10
                 );
@@ -342,7 +344,7 @@
                 );
 
 
-                osc.connect(
+                oscillator.connect(
                     gain
                 );
 
@@ -352,12 +354,12 @@
                 );
 
 
-                osc.start(
+                oscillator.start(
                     now
                 );
 
 
-                osc.stop(
+                oscillator.stop(
                     now + .12
                 );
 
@@ -369,10 +371,11 @@
             ===================================================== */
 
             if (
-                type === "page"
+                type ===
+                "page"
             ) {
 
-                const osc =
+                const oscillator =
                     ctx.createOscillator();
 
 
@@ -380,17 +383,17 @@
                     ctx.createGain();
 
 
-                osc.type =
+                oscillator.type =
                     "triangle";
 
 
-                osc.frequency.setValueAtTime(
+                oscillator.frequency.setValueAtTime(
                     250,
                     now
                 );
 
 
-                osc.frequency.exponentialRampToValueAtTime(
+                oscillator.frequency.exponentialRampToValueAtTime(
                     540,
                     now + .17
                 );
@@ -408,7 +411,7 @@
                 );
 
 
-                osc.connect(
+                oscillator.connect(
                     gain
                 );
 
@@ -418,18 +421,18 @@
                 );
 
 
-                osc.start(
+                oscillator.start(
                     now
                 );
 
 
-                osc.stop(
+                oscillator.stop(
                     now + .21
                 );
 
 
                 /*
-                 * High sparkle
+                 * 高頻 sparkle
                  */
 
                 const high =
@@ -636,7 +639,7 @@
                     style="
                         padding:20px;
                         text-align:center;
-                        color:#8da2ad;
+                        color:#8ca1ad;
                         font-size:10px;
                         letter-spacing:1px;
                     "
@@ -694,7 +697,7 @@
 
                     <button
                         class="track-remove"
-                        aria-label="Remove track"
+                        aria-label="Remove"
                     >
                         ×
                     </button>
@@ -818,7 +821,7 @@
         ) {
 
             console.warn(
-                "Track playback error:",
+                "Playback error:",
                 error
             );
 
@@ -937,7 +940,7 @@
 
 
     /* =========================================================
-       REMOVE TRACK
+       REMOVE
     ========================================================= */
 
     function removeTrack(
@@ -951,7 +954,7 @@
             return;
 
 
-        const wasCurrent =
+        const removedCurrent =
             index ===
             currentTrackIndex;
 
@@ -1003,7 +1006,7 @@
 
 
         if (
-            wasCurrent
+            removedCurrent
         ) {
 
             if (
@@ -1030,7 +1033,7 @@
 
 
     /* =========================================================
-       EXTRACT YOUTUBE ID
+       YOUTUBE ID
     ========================================================= */
 
     function extractYoutubeId(
@@ -1115,21 +1118,21 @@
                     )
             ) {
 
-                const watchId =
+                const id =
                     url.searchParams.get(
                         "v"
                     );
 
 
                 if (
-                    watchId &&
+                    id &&
                     /^[a-zA-Z0-9_-]{11}$/
                         .test(
-                            watchId
+                            id
                         )
                 ) {
 
-                    return watchId;
+                    return id;
 
                 }
 
@@ -1171,7 +1174,7 @@
 
 
     /* =========================================================
-       YOUTUBE TITLE
+       FETCH TITLE
     ========================================================= */
 
     async function fetchYoutubeTitle(
@@ -1329,7 +1332,7 @@
 
 
     /* =========================================================
-       MUSIC PANEL TOGGLE
+       MUSIC BUTTON
     ========================================================= */
 
     if (
@@ -1362,7 +1365,7 @@
 
 
     /* =========================================================
-       MUSIC PLAY BUTTON
+       PLAY BUTTON
     ========================================================= */
 
     if (
@@ -1390,14 +1393,14 @@
 
 
     /* =========================================================
-       PREVIOUS BUTTON
+       PREVIOUS
     ========================================================= */
 
     if (
-        prevButton
+        previousButton
     ) {
 
-        prevButton.addEventListener(
+        previousButton.addEventListener(
             "click",
             event => {
 
@@ -1413,7 +1416,7 @@
 
 
     /* =========================================================
-       NEXT BUTTON
+       NEXT
     ========================================================= */
 
     if (
@@ -1436,7 +1439,7 @@
 
 
     /* =========================================================
-       CLICK OUTSIDE MUSIC PANEL
+       CLICK OUTSIDE
     ========================================================= */
 
     document.addEventListener(
@@ -1517,7 +1520,7 @@
 
 
     /* =========================================================
-       INIT PLAYER
+       INITIALIZE PLAYER
     ========================================================= */
 
     function initPlayer() {
