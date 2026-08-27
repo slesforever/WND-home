@@ -3,371 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WND // ARCHIVE</title>
+  <title>ARCHIVE SYSTEM - Commercial HUD Boot Screen</title>
   <style>
     :root {
-      --warm-white: rgba(255, 255, 255, 0.92);
-      --glass-bg: rgba(25, 20, 30, 0.45);
-      --glass-border: rgba(255, 255, 255, 0.2);
-      --accent-warm: #ffd1a4;
-      --text-main: #ffffff;
-      --text-muted: rgba(255, 255, 255, 0.65);
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.4);
+      --bg-dark: #030712;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", sans-serif;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      width: 100vw;
-      height: 100vh;
+      background-color: var(--bg-dark);
+      color: #fff;
+      font-family: 'Consolas', 'Courier New', monospace;
       overflow: hidden;
-      background: url('maxresdefault.jpg') center/cover no-repeat fixed;
-      display: flex;
-      flex-direction: column;
-      color: var(--text-main);
-      position: relative;
+      height: 100vh;
     }
 
-    /* 溫和的夕陽暗化濾鏡 */
-    body::before {
-      content: '';
+    /* 隱藏 YouTube 播放器 */
+    #youtube-player {
       position: absolute;
-      inset: 0;
-      background: rgba(15, 10, 20, 0.25);
-      z-index: 0;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    /* ==========================================
-       1. 簡約優雅開機畫面 (Boot Screen)
-       ========================================== */
+    /* 全螢幕開機動畫容器 */
     #boot-screen {
       position: fixed;
-      inset: 0;
-      background: rgba(15, 12, 20, 0.75);
-      backdrop-filter: blur(20px);
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: radial-gradient(circle at center, #0a192f 0%, #020611 100%);
       z-index: 9999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      cursor: pointer;
       transition: opacity 0.8s ease, transform 0.8s ease;
     }
 
-    #boot-screen.fade-out {
-      opacity: 0;
-      transform: scale(1.05);
+    /* 背景戰術網格與掃描線 */
+    .hud-grid {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .scanlines {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+      background-size: 100% 4px;
       pointer-events: none;
     }
 
-    .boot-content {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .boot-title {
-      font-size: 36px;
-      font-weight: 300;
-      letter-spacing: 12px;
-      color: var(--text-main);
-      text-indent: 12px;
-    }
-
-    .boot-subtitle {
-      font-size: 12px;
-      letter-spacing: 4px;
-      color: var(--accent-warm);
-      margin-bottom: 24px;
-      opacity: 0.8;
-    }
-
-    .enter-btn {
-      padding: 10px 32px;
-      font-size: 12px;
-      letter-spacing: 3px;
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      backdrop-filter: blur(5px);
-      transition: all 0.3s ease;
-    }
-
-    #boot-screen:hover .enter-btn {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateY(-2px);
-    }
-
-    /* ==========================================
-       2. 主面板介面 (Main UI)
-       ========================================== */
-    .top-bar {
-      width: 100%;
-      height: 52px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 32px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .brand-title {
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 3px;
-    }
-
-    .main-viewport {
-      flex: 1;
+    /* 中央幾何菱形 Core */
+    .core-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 24px;
-      z-index: 10;
+      margin-bottom: 2.5rem;
+    }
+    .diamond-outer {
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      border: 2px solid var(--cyan);
+      transform: rotate(45deg);
+      box-shadow: 0 0 15px var(--cyan-glow), inset 0 0 15px var(--cyan-glow);
+      animation: rotateOuter 10s linear infinite;
+    }
+    .diamond-inner {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      border: 1px dashed var(--cyan);
+      transform: rotate(45deg);
+      animation: rotateInner 5s linear infinite reverse;
+    }
+    .diamond-center {
+      width: 20px;
+      height: 20px;
+      background: var(--cyan);
+      transform: rotate(45deg);
+      box-shadow: 0 0 20px var(--cyan);
+      animation: pulse 1.5s ease-in-out infinite alternate;
     }
 
-    .glass-card {
-      width: 860px;
-      max-width: 92vw;
-      height: 500px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px) saturate(120%);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+    @keyframes rotateOuter { 0% { transform: rotate(45deg); } 100% { transform: rotate(405deg); } }
+    @keyframes rotateInner { 0% { transform: rotate(45deg); } 100% { transform: rotate(405deg); } }
+    @keyframes pulse { 0% { opacity: 0.4; transform: rotate(45deg) scale(0.8); } 100% { opacity: 1; transform: rotate(45deg) scale(1.2); } }
+
+    /* 進度面板 */
+    .progress-box {
+      width: 360px;
+      text-align: center;
       position: relative;
+      z-index: 2;
     }
-
-    .tab-bar {
-      display: flex;
-      background: rgba(0, 0, 0, 0.15);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 0 16px;
-    }
-
-    .tab-item {
-      padding: 16px 28px;
-      font-size: 13px;
+    .status-log {
+      font-size: 12px;
+      color: rgba(0, 240, 255, 0.85);
+      height: 22px;
       letter-spacing: 2px;
-      color: var(--text-muted);
-      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--cyan);
+      margin: 12px 0;
       position: relative;
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+    .bar-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+      transition: width 0.08s linear;
+    }
+    .percent-text {
+      color: var(--cyan);
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    /* 商業級進入按鈕 */
+    .start-btn {
+      display: none;
+      margin-top: 15px;
+      padding: 14px 36px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 2px solid var(--cyan);
+      color: var(--cyan);
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      cursor: pointer;
+      text-shadow: 0 0 8px var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+      clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
       transition: all 0.25s ease;
     }
-
-    .tab-item:hover { color: #ffffff; }
-
-    .tab-item.active {
-      color: #ffffff;
-      font-weight: 600;
-    }
-
-    .tab-item.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 28px; right: 28px;
-      height: 2px;
-      background: var(--accent-warm);
-      border-radius: 2px;
-    }
-
-    .content-body {
-      flex: 1;
-      position: relative;
-      padding: 32px;
-    }
-
-    .page {
-      position: absolute;
-      inset: 32px;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      display: flex;
-      gap: 32px;
-    }
-
-    .page.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    /* 左側個人簡介面板 */
-    .user-profile-box {
-      width: 200px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .avatar-box {
-      width: 68px; height: 68px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      display: flex; justify-content: center; align-items: center;
-      font-size: 18px; font-weight: 600;
-      color: #ffffff;
-      margin-bottom: 16px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .user-name {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-
-    .user-role {
-      font-size: 11px;
-      color: var(--accent-warm);
-      letter-spacing: 1px;
-      opacity: 0.9;
-    }
-
-    .detail-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .placeholder-box {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px dashed rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 18px;
-      color: var(--text-muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    /* 簡約音樂按鈕 */
-    .audio-btn {
-      position: absolute;
-      bottom: 20px;
-      right: 24px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #ffffff;
-      padding: 8px 16px;
-      font-size: 11px;
-      letter-spacing: 2px;
-      border-radius: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .audio-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    #yt-player-container {
-      position: absolute;
-      width: 0; height: 0;
-      opacity: 0;
-      pointer-events: none;
+    .start-btn:hover {
+      background: var(--cyan);
+      color: #000;
+      box-shadow: 0 0 30px var(--cyan);
+      text-shadow: none;
     }
   </style>
 </head>
 <body>
 
-  <div id="yt-player-container">
-    <div id="yt-player"></div>
-  </div>
+  <!-- 音樂播放器載入區 (Unwelcome School) -->
+  <div id="youtube-player"></div>
 
-  <!-- 1. 開機動畫 -->
-  <div id="boot-screen" onclick="startSystem()">
-    <div class="boot-content">
-      <div class="boot-title">WND</div>
-      <div class="boot-subtitle">PERSONAL ARCHIVE</div>
-      <div class="enter-btn">CLICK TO ENTER</div>
+  <!-- 開機動畫遮罩 -->
+  <div id="boot-screen">
+    <div class="hud-grid"></div>
+    <div class="scanlines"></div>
+
+    <div class="core-container">
+      <div class="diamond-outer"></div>
+      <div class="diamond-inner"></div>
+      <div class="diamond-center"></div>
     </div>
-  </div>
 
-  <!-- 2. 頂部列 -->
-  <header class="top-bar">
-    <div class="brand-title">WND ARCHIVE</div>
-  </header>
-
-  <!-- 3. 主內容卡片 -->
-  <main class="main-viewport">
-    <div class="glass-card">
-      <nav class="tab-bar">
-        <div class="tab-item active" onclick="switchTab(0)">PROFILE</div>
-        <div class="tab-item" onclick="switchTab(1)">MESSAGES</div>
-        <div class="tab-item" onclick="switchTab(2)">ARCHIVE</div>
-      </nav>
-
-      <div class="content-body">
-        <!-- PAGE 1: Profile -->
-        <div class="page active">
-          <div class="user-profile-box">
-            <div class="avatar-box">WND</div>
-            <div class="user-name">WND</div>
-            <div class="user-role">CREATOR</div>
-          </div>
-          <div class="detail-container">
-            <div class="placeholder-box">
-              <strong style="color: var(--accent-warm);">[ PROFILE ]</strong><br>
-              請在此處填寫 WND 的個人介紹...
-            </div>
-            <div class="placeholder-box">
-              <strong style="color: var(--accent-warm);">[ SKILLS ]</strong><br>
-              預留技能與簡歷位置...
-            </div>
-          </div>
-        </div>
-
-        <!-- PAGE 2: Messages -->
-        <div class="page">
-          <div class="detail-container" style="width: 100%;">
-            <div class="placeholder-box">
-              <strong style="color: var(--accent-warm);">[ MESSAGES ]</strong><br>
-              預留對話或留言區塊...
-            </div>
-          </div>
-        </div>
-
-        <!-- PAGE 3: Archive -->
-        <div class="page">
-          <div class="detail-container" style="width: 100%;">
-            <div class="placeholder-box">
-              <strong style="color: var(--accent-warm);">[ WORK ARCHIVE ]</strong><br>
-              預留作品與專案紀錄位置...
-            </div>
-          </div>
-        </div>
+    <div class="progress-box">
+      <div class="status-log" id="status-text">SYSTEM INITIATING...</div>
+      <div class="bar-bg">
+        <div class="bar-fill" id="bar-fill"></div>
       </div>
-
-      <button class="audio-btn" onclick="toggleBgm()">
-        <span id="bgm-icon">♪</span> MUSIC
-      </button>
+      <div class="percent-text" id="percent-text">0%</div>
+      <button id="start-btn" class="start-btn">INITIALIZE SYSTEM [ENTER]</button>
     </div>
-  </main>
+  </div>
 
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="music_module.js"></script>
+  <script>
+    // 1. YouTube Iframe API 載入設定
+    var player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('youtube-player', {
+        videoId: 'eMqWJDP28p8', // Unwelcome School
+        playerVars: {
+          'autoplay': 0,
+          'controls': 0,
+          'loop': 1,
+          'playlist': 'eMqWJDP28p8'
+        }
+      });
+    }
+
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // 2. 模擬高階系統診斷 Log 載入動畫
+    let percent = 0;
+    const barFill = document.getElementById('bar-fill');
+    const percentText = document.getElementById('percent-text');
+    const statusText = document.getElementById('status-text');
+    const startBtn = document.getElementById('start-btn');
+    const bootScreen = document.getElementById('boot-screen');
+
+    const logs = [
+      "AUTHENTICATING CREDENTIALS...",
+      "ALLOCATING HUD GRAPHICS...",
+      "MOUNTING AUDIO CORE [Unwelcome School]...",
+      "DECRYPTING ARCHIVE DATA...",
+      "SYSTEM CHECK COMPLETED."
+    ];
+
+    const timer = setInterval(() => {
+      percent += Math.floor(Math.random() * 5) + 1;
+      if (percent >= 100) {
+        percent = 100;
+        clearInterval(timer);
+        barFill.style.width = '100%';
+        statusText.innerText = "SYSTEM READY - CLICK TO START";
+        percentText.style.display = 'none';
+        startBtn.style.display = 'inline-block';
+      } else {
+        barFill.style.width = percent + '%';
+        percentText.innerText = percent + '%';
+        let logIndex = Math.floor((percent / 100) * logs.length);
+        statusText.innerText = logs[Math.min(logIndex, logs.length - 1)];
+      }
+    }, 40);
+
+    // 3. 點擊進入時播放音樂並解鎖頁面
+    startBtn.addEventListener('click', () => {
+      if (player && typeof player.playVideo === 'function') {
+        player.unMute();
+        player.setVolume(80);
+        player.playVideo();
+      }
+      bootScreen.style.opacity = '0';
+      bootScreen.style.transform = 'scale(1.05)';
+      setTimeout(() => {
+        bootScreen.style.display = 'none';
+      }, 800);
+    });
+  </script>
 </body>
 </html>
