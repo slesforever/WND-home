@@ -1,431 +1,1017 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCHALE // ARCHIVE SYSTEM</title>
-  <style>
-    :root {
-      --ba-blue: #00a3ff;
-      --ba-navy: #12213f;
-      --ba-light-bg: rgba(240, 246, 255, 0.82);
-      --ba-glass-border: rgba(255, 255, 255, 0.8);
-      --text-dark: #1e293b;
-      --text-sub: #64748b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", sans-serif;
-    }
+    <title>Sles | Archive</title>
 
-    body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: url('maxresdefault.jpg') center/cover no-repeat fixed;
-      display: flex;
-      flex-direction: column;
-      color: var(--text-dark);
-      position: relative;
-    }
+    <link rel="icon" href="https://shared.fastly.steamstatic.com/community_assets/images/apps/1256670/6aae1f276e95e65de99d6ffea75f010167d5d0c6.jpg">
 
-    /* 蔚藍檔案風格：清透明亮的薄霧覆蓋 */
-    body::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(235, 243, 255, 0.25);
-      backdrop-filter: blur(4px);
-      z-index: 0;
-    }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    /* ==========================================
-       1. 蔚藍檔案風格開機動畫 (Boot Screen)
-       ========================================== */
-    #boot-screen {
-      position: fixed;
-      inset: 0;
-      background: rgba(245, 249, 255, 0.88);
-      backdrop-filter: blur(25px) saturate(130%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        rel="stylesheet"
+    >
 
-    #boot-screen.fade-out {
-      opacity: 0;
-      transform: scale(1.04);
-      pointer-events: none;
-    }
+    <style>
+        :root {
+            --blue: #53bdf7;
+            --blue-dark: #3aa8ea;
+            --blue-soft: rgba(83, 189, 247, 0.18);
 
-    /* BA 標誌性光環與極簡中心 */
-    .ba-halo-container {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 24px;
-    }
+            --white: #ffffff;
+            --text: #273849;
+            --text-soft: #72859a;
 
-    .ba-halo {
-      position: absolute;
-      width: 90px;
-      height: 90px;
-      border: 2px solid var(--ba-blue);
-      border-radius: 50%;
-      box-shadow: 0 0 15px rgba(0, 163, 255, 0.3);
-      animation: haloPulse 3s ease-in-out infinite alternate;
-    }
+            --glass: rgba(255, 255, 255, 0.78);
+            --border: rgba(255, 255, 255, 0.75);
 
-    .ba-halo-inner {
-      position: absolute;
-      width: 45px;
-      height: 45px;
-      border: 1px dashed var(--ba-blue);
-      border-radius: 50%;
-      animation: spin 12s linear infinite;
-    }
+            --shadow:
+                0 20px 60px rgba(54, 116, 160, 0.16),
+                0 4px 18px rgba(54, 116, 160, 0.08);
+        }
 
-    .ba-cross {
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      background: var(--ba-blue);
-      clip-path: polygon(35% 0%, 65% 0%, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0% 65%, 0% 35%, 35% 35%);
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    @keyframes haloPulse {
-      0% { transform: scale(0.95); opacity: 0.7; }
-      100% { transform: scale(1.05); opacity: 1; }
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
 
-    .boot-title {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 6px;
-      color: var(--ba-navy);
-      margin-bottom: 6px;
-    }
+        body {
+            overflow: hidden;
+            color: var(--text);
+            font-family: "Manrope", "Noto Sans TC", sans-serif;
+            background:
+                linear-gradient(
+                    135deg,
+                    #dff5ff 0%,
+                    #edfaff 35%,
+                    #f7fbff 70%,
+                    #e5f6ff 100%
+                );
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
 
-    .boot-subtitle {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 3px;
-      color: var(--ba-blue);
-      margin-bottom: 32px;
-    }
+        /* =========================
+           背景
+        ========================= */
 
-    .connect-btn {
-      padding: 12px 48px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      color: #ffffff;
-      background: var(--ba-blue);
-      border: none;
-      border-radius: 30px;
-      box-shadow: 0 8px 20px rgba(0, 163, 255, 0.35);
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
+        .background {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
 
-    .connect-btn:hover {
-      background: #008ee6;
-      transform: translateY(-2px);
-      box-shadow: 0 12px 25px rgba(0, 163, 255, 0.45);
-    }
+        .background::before {
+            content: "";
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            top: -260px;
+            right: -180px;
+            border-radius: 50%;
+            background: rgba(110, 207, 255, 0.20);
+            filter: blur(40px);
+        }
 
-    /* ==========================================
-       2. 主 UI 介面 (BA 白藍透光風格)
-       ========================================== */
-    .top-bar {
-      width: 100%;
-      height: 50px;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(15px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.9);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 32px;
-      z-index: 10;
-    }
+        .background::after {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            bottom: -220px;
+            left: -150px;
+            border-radius: 50%;
+            background: rgba(150, 220, 255, 0.16);
+            filter: blur(50px);
+        }
 
-    .brand-title {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 3px;
-      color: var(--ba-navy);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .grid {
+            position: absolute;
+            inset: 0;
+            opacity: 0.18;
 
-    .brand-title::before {
-      content: '';
-      width: 8px; height: 8px;
-      background: var(--ba-blue);
-      border-radius: 50%;
-    }
+            background-image:
+                linear-gradient(rgba(80, 170, 220, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(80, 170, 220, 0.08) 1px, transparent 1px);
 
-    .main-viewport {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-      z-index: 10;
-    }
+            background-size: 42px 42px;
 
-    .glass-card {
-      width: 880px;
-      max-width: 92vw;
-      height: 520px;
-      background: var(--ba-light-bg);
-      backdrop-filter: blur(20px) saturate(120%);
-      border: 1px solid var(--ba-glass-border);
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(18, 33, 63, 0.12);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
+            mask-image: linear-gradient(
+                to bottom,
+                transparent,
+                black 15%,
+                black 85%,
+                transparent
+            );
 
-    .tab-bar {
-      display: flex;
-      background: rgba(255, 255, 255, 0.5);
-      border-bottom: 1px solid rgba(220, 230, 245, 0.8);
-      padding: 0 20px;
-    }
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                transparent,
+                black 15%,
+                black 85%,
+                transparent
+            );
+        }
 
-    .tab-item {
-      padding: 16px 28px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--text-sub);
-      cursor: pointer;
-      position: relative;
-      transition: all 0.2s ease;
-    }
+        /* =========================
+           頂部
+        ========================= */
 
-    .tab-item:hover { color: var(--ba-navy); }
+        .top-bar {
+            position: fixed;
+            top: 28px;
+            left: 34px;
+            right: 34px;
 
-    .tab-item.active {
-      color: var(--ba-blue);
-    }
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
 
-    .tab-item.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 20px; right: 20px;
-      height: 3px;
-      background: var(--ba-blue);
-      border-radius: 3px 3px 0 0;
-    }
+            z-index: 20;
 
-    .content-body {
-      flex: 1;
-      position: relative;
-      padding: 32px;
-    }
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
 
-    .page {
-      position: absolute;
-      inset: 32px;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      display: flex;
-      gap: 28px;
-    }
+            color: rgba(50, 100, 130, 0.58);
+        }
 
-    .page.active {
-      opacity: 1;
-      visibility: visible;
-    }
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    /* 左側角色卡 */
-    .user-profile-box {
-      width: 210px;
-      background: rgba(255, 255, 255, 0.7);
-      border: 1px solid #ffffff;
-      border-radius: 14px;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    }
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--blue);
+            box-shadow: 0 0 10px rgba(83, 189, 247, 0.8);
+        }
 
-    .avatar-box {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: #eaf4ff;
-      border: 2px solid var(--ba-blue);
-      display: flex; justify-content: center; align-items: center;
-      font-size: 18px; font-weight: 800;
-      color: var(--ba-blue);
-      margin-bottom: 14px;
-    }
+        /* =========================
+           主容器
+        ========================= */
 
-    .user-name {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--ba-navy);
-      letter-spacing: 1px;
-    }
+        .main {
+            position: relative;
+            z-index: 10;
 
-    .user-role {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--ba-blue);
-      letter-spacing: 1px;
-      margin-top: 2px;
-    }
+            width: 100%;
+            height: 100%;
 
-    .detail-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-    .placeholder-box {
-      background: rgba(255, 255, 255, 0.65);
-      border: 1px solid rgba(220, 230, 245, 0.9);
-      border-radius: 12px;
-      padding: 20px;
-      color: var(--text-dark);
-      font-size: 13px;
-      line-height: 1.6;
-    }
+            padding: 70px 24px;
+        }
 
-    /* 音樂按鈕 */
-    .audio-btn {
-      position: absolute;
-      bottom: 20px;
-      right: 24px;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid var(--ba-blue);
-      color: var(--ba-blue);
-      padding: 8px 20px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      border-radius: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(0, 163, 255, 0.15);
-    }
+        /* =========================
+           卡片
+        ========================= */
 
-    .audio-btn:hover {
-      background: var(--ba-blue);
-      color: #ffffff;
-    }
+        .card {
+            position: relative;
 
-    #yt-player-container {
-      position: absolute;
-      width: 0; height: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
-  </style>
+            width: min(560px, 92vw);
+            min-height: 420px;
+
+            padding: 46px 48px 42px;
+
+            background: var(--glass);
+            border: 1px solid var(--border);
+
+            border-radius: 26px;
+
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            box-shadow: var(--shadow);
+
+            overflow: hidden;
+
+            transition:
+                opacity 0.24s ease,
+                transform 0.24s ease,
+                filter 0.24s ease;
+        }
+
+        .card::before {
+            content: "";
+
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 4px;
+
+            background: linear-gradient(
+                90deg,
+                #5bc8ff,
+                #8bdcff,
+                #5bc8ff
+            );
+        }
+
+        .card::after {
+            content: "";
+
+            position: absolute;
+            width: 180px;
+            height: 180px;
+
+            top: -90px;
+            right: -90px;
+
+            border-radius: 50%;
+
+            background: rgba(83, 189, 247, 0.10);
+        }
+
+        .card.fade-next {
+            opacity: 0;
+            transform: translateX(-28px);
+            filter: blur(5px);
+        }
+
+        .card.fade-prev {
+            opacity: 0;
+            transform: translateX(28px);
+            filter: blur(5px);
+        }
+
+        /* =========================
+           卡片標頭
+        ========================= */
+
+        .eyebrow {
+            position: relative;
+            z-index: 2;
+
+            color: var(--blue-dark);
+
+            font-size: 11px;
+            font-weight: 800;
+
+            letter-spacing: 2px;
+            text-transform: uppercase;
+
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            position: relative;
+            z-index: 2;
+
+            margin: 0;
+
+            color: #1e3345;
+
+            font-size: clamp(38px, 8vw, 58px);
+            line-height: 1;
+
+            font-weight: 800;
+            letter-spacing: -2px;
+        }
+
+        .subtitle {
+            position: relative;
+            z-index: 2;
+
+            margin-top: 12px;
+            margin-bottom: 38px;
+
+            color: var(--text-soft);
+
+            font-size: 13px;
+            font-weight: 500;
+
+            letter-spacing: 0.4px;
+        }
+
+        /* =========================
+           資料
+        ========================= */
+
+        .data-list {
+            position: relative;
+            z-index: 2;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 12px;
+        }
+
+        .data-row {
+            display: flex;
+            align-items: center;
+
+            min-height: 72px;
+
+            padding: 14px 16px;
+
+            border-radius: 16px;
+
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(130, 195, 225, 0.20);
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .data-row:hover {
+            transform: translateY(-2px);
+
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(83, 189, 247, 0.35);
+        }
+
+        .data-icon {
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-right: 14px;
+
+            border-radius: 10px;
+
+            background: rgba(83, 189, 247, 0.12);
+
+            color: var(--blue-dark);
+
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .data-content {
+            min-width: 0;
+        }
+
+        .label {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: #7c92a4;
+
+            font-size: 10px;
+            font-weight: 700;
+
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .value {
+            display: block;
+
+            color: #31485b;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            line-height: 1.4;
+
+            word-break: break-word;
+        }
+
+        /* =========================
+           頁碼
+        ========================= */
+
+        .page-info {
+            position: absolute;
+
+            right: 28px;
+            bottom: 23px;
+
+            color: #94a9b9;
+
+            font-size: 10px;
+            font-weight: 700;
+
+            letter-spacing: 1.5px;
+        }
+
+        /* =========================
+           翻頁按鈕
+        ========================= */
+
+        .nav {
+            position: fixed;
+
+            top: 50%;
+            transform: translateY(-50%);
+
+            z-index: 30;
+
+            width: 48px;
+            height: 48px;
+
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+
+            background: rgba(255, 255, 255, 0.80);
+
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            box-shadow:
+                0 8px 24px rgba(65, 139, 180, 0.12);
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: var(--blue-dark);
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .nav:hover {
+            background: #ffffff;
+
+            box-shadow:
+                0 10px 28px rgba(65, 139, 180, 0.20);
+        }
+
+        .nav:active {
+            transform: translateY(-50%) scale(0.92);
+        }
+
+        .nav-left {
+            left: 26px;
+        }
+
+        .nav-right {
+            right: 26px;
+        }
+
+        .nav-arrow {
+            width: 8px;
+            height: 8px;
+
+            border-top: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+        }
+
+        .arrow-left {
+            transform: rotate(-135deg);
+            margin-left: 3px;
+        }
+
+        .arrow-right {
+            transform: rotate(45deg);
+            margin-right: 3px;
+        }
+
+        /* =========================
+           音樂按鈕
+        ========================= */
+
+        .music-button {
+            position: fixed;
+
+            right: 30px;
+            bottom: 28px;
+
+            z-index: 50;
+
+            width: 44px;
+            height: 44px;
+
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            border-radius: 14px;
+
+            background: rgba(255, 255, 255, 0.78);
+
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            box-shadow:
+                0 8px 24px rgba(65, 139, 180, 0.12);
+
+            color: var(--blue-dark);
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 18px;
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .music-button:hover {
+            background: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .music-button.playing {
+            box-shadow:
+                0 0 0 5px rgba(83, 189, 247, 0.08),
+                0 8px 24px rgba(65, 139, 180, 0.15);
+        }
+
+        .music-status {
+            position: fixed;
+
+            right: 84px;
+            bottom: 30px;
+
+            z-index: 50;
+
+            max-width: 220px;
+
+            padding: 9px 13px;
+
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+
+            color: #61778a;
+
+            font-size: 10px;
+            font-weight: 700;
+
+            letter-spacing: 0.5px;
+
+            opacity: 0;
+
+            transform: translateY(8px);
+
+            pointer-events: none;
+
+            transition:
+                opacity 0.25s ease,
+                transform 0.25s ease;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .music-status.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =========================
+           Mobile
+        ========================= */
+
+        @media (max-width: 700px) {
+            .top-bar {
+                left: 18px;
+                right: 18px;
+                top: 20px;
+            }
+
+            .main {
+                padding:
+                    70px
+                    18px
+                    90px;
+            }
+
+            .card {
+                width: 100%;
+                min-height: auto;
+
+                padding: 34px 22px 48px;
+
+                border-radius: 22px;
+            }
+
+            h1 {
+                font-size: 40px;
+            }
+
+            .subtitle {
+                margin-bottom: 25px;
+            }
+
+            .data-row {
+                min-height: 66px;
+                padding: 12px 13px;
+            }
+
+            .value {
+                font-size: 13px;
+            }
+
+            .nav {
+                width: 42px;
+                height: 42px;
+            }
+
+            .nav-left {
+                left: 10px;
+            }
+
+            .nav-right {
+                right: 10px;
+            }
+
+            .music-button {
+                right: 18px;
+                bottom: 18px;
+            }
+
+            .music-status {
+                right: 72px;
+                bottom: 21px;
+                max-width: 160px;
+            }
+
+            .page-info {
+                right: 20px;
+                bottom: 17px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-  <div id="yt-player-container">
-    <div id="yt-player"></div>
-  </div>
-
-  <!-- 1. 蔚藍檔案風格開機畫面 -->
-  <div id="boot-screen">
-    <div class="ba-halo-container">
-      <div class="ba-halo"></div>
-      <div class="ba-halo-inner"></div>
-      <div class="ba-cross"></div>
+    <div class="background">
+        <div class="grid"></div>
     </div>
-    <div class="boot-title">SCHALE ARCHIVE</div>
-    <div class="boot-subtitle">SYSTEM READY TO CONNECT</div>
-    <button class="connect-btn" onclick="startSystem()">TOUCH TO START</button>
-  </div>
 
-  <!-- 2. 頂部列 -->
-  <header class="top-bar">
-    <div class="brand-title">SCHALE OS // WND</div>
-  </header>
-
-  <!-- 3. 主面板 -->
-  <main class="main-viewport">
-    <div class="glass-card">
-      <nav class="tab-bar">
-        <div class="tab-item active" onclick="switchTab(0)">PROFILE</div>
-        <div class="tab-item" onclick="switchTab(1)">MESSAGES</div>
-        <div class="tab-item" onclick="switchTab(2)">ARCHIVE</div>
-      </nav>
-
-      <div class="content-body">
-        <!-- PAGE 1: Profile -->
-        <div class="page active">
-          <div class="user-profile-box">
-            <div class="avatar-box">WND</div>
-            <div class="user-name">WND</div>
-            <div class="user-role">STUDENT</div>
-          </div>
-          <div class="detail-container">
-            <div class="placeholder-box">
-              <strong style="color: var(--ba-blue);">[ 個人檔案 / PROFILE ]</strong><br>
-              在此填寫 WND 的個人簡介...
-            </div>
-            <div class="placeholder-box">
-              <strong style="color: var(--ba-blue);">[ 專長領域 / SKILLS ]</strong><br>
-              預留技能與專案簡歷位置...
-            </div>
-          </div>
+    <div class="top-bar">
+        <div class="top-left">
+            <span class="dot"></span>
+            <span>SLES ARCHIVE</span>
         </div>
 
-        <!-- PAGE 2: Messages -->
-        <div class="page">
-          <div class="detail-container" style="width: 100%;">
-            <div class="placeholder-box">
-              <strong style="color: var(--ba-blue);">[ 訊息紀錄 / MESSAGES ]</strong><br>
-              預留對話紀錄區塊...
-            </div>
-          </div>
-        </div>
-
-        <!-- PAGE 3: Archive -->
-        <div class="page">
-          <div class="detail-container" style="width: 100%;">
-            <div class="placeholder-box">
-              <strong style="color: var(--ba-blue);">[ 作品歸檔 / WORK ARCHIVE ]</strong><br>
-              預留作品與檔案紀錄位置...
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <button class="audio-btn" onclick="toggleBgm()">
-        <span id="bgm-icon">♪</span> BGM CONTROL
-      </button>
+        <span>PROFILE / 01</span>
     </div>
-  </main>
 
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="music_module.js"></script>
+    <!-- 左 -->
+    <button
+        class="nav nav-left"
+        id="btn-prev"
+        aria-label="Previous Page"
+    >
+        <span class="nav-arrow arrow-left"></span>
+    </button>
+
+    <!-- 右 -->
+    <button
+        class="nav nav-right"
+        id="btn-next"
+        aria-label="Next Page"
+    >
+        <span class="nav-arrow arrow-right"></span>
+    </button>
+
+    <main class="main">
+
+        <section class="card" id="ui-card">
+
+            <div class="eyebrow" id="eyebrow">
+                RECORD OF LIBRARIAN
+            </div>
+
+            <h1 id="title">
+                Sles
+            </h1>
+
+            <div class="subtitle" id="subtitle">
+                PERSONAL ARCHIVE
+            </div>
+
+            <div class="data-list" id="data-list"></div>
+
+            <div class="page-info" id="page-info">
+                01 / 03
+            </div>
+
+        </section>
+
+    </main>
+
+    <div
+        class="music-status"
+        id="music-status"
+    >
+        MUSIC OFF
+    </div>
+
+    <button
+        class="music-button"
+        id="music-button"
+        title="Music"
+        aria-label="Toggle Music"
+    >
+        ♫
+    </button>
+
+    <script>
+
+        /* =====================================
+           頁面資料
+        ===================================== */
+
+        const pages = [
+
+            {
+                eyebrow: "RECORD OF LIBRARIAN",
+
+                title: "Sles",
+
+                subtitle: "PERSONAL ARCHIVE",
+
+                rows: [
+                    {
+                        icon: "✦",
+                        label: "Identity",
+                        value: "Human / Developer"
+                    },
+                    {
+                        icon: "♡",
+                        label: "Likes",
+                        value: "Game Development / Novels"
+                    },
+                    {
+                        icon: "◷",
+                        label: "Birthday",
+                        value: "09 / 21"
+                    }
+                ]
+            },
+
+            {
+                eyebrow: "ARCHIVE DATABASE",
+
+                title: "Favorites",
+
+                subtitle: "PREFERENCES / ARCHIVE",
+
+                rows: [
+                    {
+                        icon: "▣",
+                        label: "Games",
+                        value: "Project Moon"
+                    },
+                    {
+                        icon: "♫",
+                        label: "Music",
+                        value: "Mili / Gone Angels"
+                    },
+                    {
+                        icon: "◇",
+                        label: "World",
+                        value: "Library of Ruina / Limbus Company / Lobotomy Corporation"
+                    }
+                ]
+            },
+
+            {
+                eyebrow: "CREATIVE WORKS",
+
+                title: "Works",
+
+                subtitle: "CREATIVE / SCRIPTING",
+
+                rows: [
+                    {
+                        icon: "⌘",
+                        label: "Development",
+                        value: "Roblox Luau / Web Front-end"
+                    },
+                    {
+                        icon: "◈",
+                        label: "Current Status",
+                        value: "Active Development"
+                    },
+                    {
+                        icon: "＋",
+                        label: "Focus",
+                        value: "Game / Art / Story / Music"
+                    }
+                ]
+            }
+
+        ];
+
+        /* =====================================
+           DOM
+        ===================================== */
+
+        const card = document.getElementById("ui-card");
+
+        const eyebrow = document.getElementById("eyebrow");
+        const title = document.getElementById("title");
+        const subtitle = document.getElementById("subtitle");
+
+        const dataList = document.getElementById("data-list");
+        const pageInfo = document.getElementById("page-info");
+
+        const btnPrev = document.getElementById("btn-prev");
+        const btnNext = document.getElementById("btn-next");
+
+        let currentPage = 0;
+        let transitioning = false;
+
+        /* =====================================
+           渲染
+        ===================================== */
+
+        function renderPage(index) {
+
+            const page = pages[index];
+
+            eyebrow.textContent = page.eyebrow;
+            title.textContent = page.title;
+            subtitle.textContent = page.subtitle;
+
+            dataList.innerHTML = "";
+
+            page.rows.forEach((row) => {
+
+                const element = document.createElement("div");
+
+                element.className = "data-row";
+
+                element.innerHTML = `
+                    <div class="data-icon">
+                        ${row.icon}
+                    </div>
+
+                    <div class="data-content">
+                        <span class="label">
+                            ${row.label}
+                        </span>
+
+                        <span class="value">
+                            ${row.value}
+                        </span>
+                    </div>
+                `;
+
+                dataList.appendChild(element);
+            });
+
+            pageInfo.textContent =
+                `${String(index + 1).padStart(2, "0")} / ${String(pages.length).padStart(2, "0")}`;
+        }
+
+        /* =====================================
+           翻頁
+        ===================================== */
+
+        function switchPage(direction) {
+
+            if (transitioning) return;
+
+            transitioning = true;
+
+            const animationClass =
+                direction === "next"
+                    ? "fade-next"
+                    : "fade-prev";
+
+            card.classList.add(animationClass);
+
+            setTimeout(() => {
+
+                if (direction === "next") {
+
+                    currentPage =
+                        (currentPage + 1) % pages.length;
+
+                } else {
+
+                    currentPage =
+                        (currentPage - 1 + pages.length) % pages.length;
+
+                }
+
+                renderPage(currentPage);
+
+                card.classList.remove(animationClass);
+
+                setTimeout(() => {
+                    transitioning = false;
+                }, 240);
+
+            }, 240);
+        }
+
+        btnNext.addEventListener("click", () => {
+            switchPage("next");
+        });
+
+        btnPrev.addEventListener("click", () => {
+            switchPage("prev");
+        });
+
+        /* =====================================
+           鍵盤
+        ===================================== */
+
+        document.addEventListener("keydown", (event) => {
+
+            if (
+                event.key === "ArrowRight" ||
+                event.key.toLowerCase() === "d"
+            ) {
+                switchPage("next");
+            }
+
+            if (
+                event.key === "ArrowLeft" ||
+                event.key.toLowerCase() === "a"
+            ) {
+                switchPage("prev");
+            }
+
+        });
+
+        /* =====================================
+           手機滑動
+        ===================================== */
+
+        let touchStartX = 0;
+
+        card.addEventListener(
+            "touchstart",
+            (event) => {
+                touchStartX =
+                    event.changedTouches[0].screenX;
+            },
+            { passive: true }
+        );
+
+        card.addEventListener(
+            "touchend",
+            (event) => {
+
+                const touchEndX =
+                    event.changedTouches[0].screenX;
+
+                const distance =
+                    touchEndX - touchStartX;
+
+                if (Math.abs(distance) < 50) {
+                    return;
+                }
+
+                if (distance < 0) {
+                    switchPage("next");
+                } else {
+                    switchPage("prev");
+                }
+
+            },
+            { passive: true }
+        );
+
+        /* =====================================
+           初始
+        ===================================== */
+
+        renderPage(0);
+
+    </script>
+
+    <script src="music_module.js"></script>
+
 </body>
 </html>
