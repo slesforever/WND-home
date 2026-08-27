@@ -1,38 +1,58 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Sles | Archive</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
-    <link rel="icon" href="https://shared.fastly.steamstatic.com/community_assets/images/apps/1256670/6aae1f276e95e65de99d6ffea75f010167d5d0c6.jpg">
+    <title>Sles // Archive</title>
+
+    <link
+        rel="icon"
+        href="https://shared.fastly.steamstatic.com/community_assets/images/apps/1256670/6aae1f276e95e65de99d6ffea75f010167d5d0c6.jpg"
+    >
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
         rel="stylesheet"
     >
 
     <style>
+
         :root {
-            --blue: #53bdf7;
-            --blue-dark: #3aa8ea;
-            --blue-soft: rgba(83, 189, 247, 0.18);
 
-            --white: #ffffff;
-            --text: #273849;
-            --text-soft: #72859a;
+            --blue: #59c7f7;
+            --blue-light: #bcecff;
+            --blue-dark: #328dbb;
 
-            --glass: rgba(255, 255, 255, 0.78);
-            --border: rgba(255, 255, 255, 0.75);
+            --cyan: #7bddff;
+
+            --white: rgba(255,255,255,0.92);
+            --white-soft: rgba(255,255,255,0.72);
+
+            --text: #324958;
+            --text-light: #718998;
+
+            --line: rgba(63,168,211,0.28);
 
             --shadow:
-                0 20px 60px rgba(54, 116, 160, 0.16),
-                0 4px 18px rgba(54, 116, 160, 0.08);
+                0 25px 70px rgba(45,107,137,0.22);
+
+            --mouse-x: 50%;
+            --mouse-y: 50%;
         }
+
+
+        /* =========================================
+           RESET
+        ========================================= */
 
         * {
             box-sizing: border-box;
@@ -40,431 +60,823 @@
 
         html,
         body {
+
             width: 100%;
             height: 100%;
+
             margin: 0;
             padding: 0;
+
         }
 
         body {
+
             overflow: hidden;
+
+            font-family:
+                "Barlow",
+                "Noto Sans TC",
+                sans-serif;
+
             color: var(--text);
-            font-family: "Manrope", "Noto Sans TC", sans-serif;
-            background:
-                linear-gradient(
-                    135deg,
-                    #dff5ff 0%,
-                    #edfaff 35%,
-                    #f7fbff 70%,
-                    #e5f6ff 100%
-                );
-            -webkit-tap-highlight-color: transparent;
+
+            background: #dff5ff;
+
             user-select: none;
+
+            -webkit-tap-highlight-color: transparent;
+
         }
 
-        /* =========================
-           背景
-        ========================= */
+
+        /* =========================================
+           BACKGROUND
+        ========================================= */
 
         .background {
+
             position: fixed;
+
             inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
 
-        .background::before {
-            content: "";
-            position: absolute;
-            width: 700px;
-            height: 700px;
-            top: -260px;
-            right: -180px;
-            border-radius: 50%;
-            background: rgba(110, 207, 255, 0.20);
-            filter: blur(40px);
-        }
-
-        .background::after {
-            content: "";
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            bottom: -220px;
-            left: -150px;
-            border-radius: 50%;
-            background: rgba(150, 220, 255, 0.16);
-            filter: blur(50px);
-        }
-
-        .grid {
-            position: absolute;
-            inset: 0;
-            opacity: 0.18;
+            z-index: 0;
 
             background-image:
-                linear-gradient(rgba(80, 170, 220, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(80, 170, 220, 0.08) 1px, transparent 1px);
+                linear-gradient(
+                    180deg,
+                    rgba(220,245,255,0.18),
+                    rgba(215,242,255,0.35)
+                ),
+                url("maxresdefault.jpg");
 
-            background-size: 42px 42px;
+            background-size: cover;
 
-            mask-image: linear-gradient(
-                to bottom,
-                transparent,
-                black 15%,
-                black 85%,
-                transparent
-            );
+            background-position: center;
 
-            -webkit-mask-image: linear-gradient(
-                to bottom,
-                transparent,
-                black 15%,
-                black 85%,
-                transparent
-            );
+            transform: scale(1.035);
+
+            animation:
+                backgroundFloat 14s ease-in-out infinite alternate;
+
         }
 
-        /* =========================
-           頂部
-        ========================= */
+        @keyframes backgroundFloat {
 
-        .top-bar {
+            from {
+                transform: scale(1.035);
+            }
+
+            to {
+                transform: scale(1.07);
+            }
+
+        }
+
+
+        /* =========================================
+           背景白霧
+        ========================================= */
+
+        .background::after {
+
+            content: "";
+
+            position: absolute;
+
+            inset: 0;
+
+            background:
+
+                radial-gradient(
+                    circle at 50% 50%,
+                    rgba(255,255,255,0.04),
+                    rgba(255,255,255,0.35)
+                );
+
+            pointer-events: none;
+
+        }
+
+
+        /* =========================================
+           GRID
+        ========================================= */
+
+        .grid {
+
+            position: absolute;
+
+            inset: 0;
+
+            background-image:
+
+                linear-gradient(
+                    rgba(255,255,255,0.18) 1px,
+                    transparent 1px
+                ),
+
+                linear-gradient(
+                    90deg,
+                    rgba(255,255,255,0.18) 1px,
+                    transparent 1px
+                );
+
+            background-size: 70px 70px;
+
+            opacity: 0.20;
+
+            mask-image:
+                linear-gradient(
+                    to bottom,
+                    transparent,
+                    black 15%,
+                    black 85%,
+                    transparent
+                );
+
+            -webkit-mask-image:
+                linear-gradient(
+                    to bottom,
+                    transparent,
+                    black 15%,
+                    black 85%,
+                    transparent
+                );
+
+        }
+
+
+        /* =========================================
+           TOP HUD
+        ========================================= */
+
+        .top-ui {
+
             position: fixed;
-            top: 28px;
-            left: 34px;
-            right: 34px;
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            top: 24px;
+            left: 30px;
+            right: 30px;
 
             z-index: 20;
 
-            font-size: 11px;
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items:
+                flex-start;
+
+            pointer-events: none;
+
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 12px;
+
             font-weight: 700;
+
             letter-spacing: 2px;
 
-            color: rgba(50, 100, 130, 0.58);
+            color:
+                rgba(35,86,112,0.72);
+
         }
 
-        .top-left {
+
+        .brand-mark {
+
+            width: 10px;
+            height: 10px;
+
+            background: white;
+
+            border:
+                2px solid
+                var(--blue);
+
+            transform:
+                rotate(45deg);
+
+            box-shadow:
+                0 0 12px
+                rgba(89,199,247,0.8);
+
+        }
+
+
+        .top-right {
+
             display: flex;
-            align-items: center;
-            gap: 10px;
+
+            flex-direction: column;
+
+            align-items: flex-end;
+
+            gap: 4px;
+
+            font-size: 10px;
+
+            letter-spacing: 1.5px;
+
+            color:
+                rgba(39,96,124,0.55);
+
         }
 
-        .dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--blue);
-            box-shadow: 0 0 10px rgba(83, 189, 247, 0.8);
+
+        /* =========================================
+           SIDE INFORMATION
+        ========================================= */
+
+        .side-info {
+
+            position: fixed;
+
+            z-index: 15;
+
+            left: 30px;
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+
+            pointer-events: none;
+
+            opacity: 0.65;
+
         }
 
-        /* =========================
-           主容器
-        ========================= */
+
+        .side-line {
+
+            width: 1px;
+
+            height: 90px;
+
+            margin-left: 5px;
+
+            background:
+                linear-gradient(
+                    to bottom,
+                    transparent,
+                    var(--blue),
+                    transparent
+                );
+
+        }
+
+
+        .side-text {
+
+            writing-mode:
+                vertical-rl;
+
+            font-size: 9px;
+
+            letter-spacing: 3px;
+
+            color:
+                #4c8da9;
+
+        }
+
+
+        /* =========================================
+           MAIN
+        ========================================= */
 
         .main {
+
             position: relative;
-            z-index: 10;
 
             width: 100%;
             height: 100%;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            z-index: 5;
 
-            padding: 70px 24px;
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            perspective: 1000px;
+
         }
 
-        /* =========================
-           卡片
-        ========================= */
 
-        .card {
+        /* =========================================
+           MAIN PANEL
+        ========================================= */
+
+        .panel {
+
             position: relative;
 
-            width: min(560px, 92vw);
-            min-height: 420px;
+            width:
+                min(620px, 88vw);
 
-            padding: 46px 48px 42px;
+            min-height: 440px;
 
-            background: var(--glass);
-            border: 1px solid var(--border);
+            padding:
+                48px 52px;
 
-            border-radius: 26px;
+            background:
+                rgba(255,255,255,0.70);
 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            border:
+                1px solid
+                rgba(255,255,255,0.95);
 
-            box-shadow: var(--shadow);
+            box-shadow:
+                var(--shadow);
+
+            backdrop-filter:
+                blur(18px)
+                saturate(120%);
+
+            -webkit-backdrop-filter:
+                blur(18px)
+                saturate(120%);
 
             overflow: hidden;
 
+            transform:
+                rotateX(
+                    calc(
+                        (var(--mouse-y) - 50%)
+                        * -0.008
+                    )
+                )
+                rotateY(
+                    calc(
+                        (var(--mouse-x) - 50%)
+                        * 0.008
+                    )
+                );
+
             transition:
-                opacity 0.24s ease,
-                transform 0.24s ease,
-                filter 0.24s ease;
+                opacity 0.28s ease,
+                transform 0.28s ease,
+                filter 0.28s ease;
+
         }
 
-        .card::before {
+
+        .panel::before {
+
             content: "";
 
             position: absolute;
+
             top: 0;
             left: 0;
 
             width: 100%;
-            height: 4px;
+            height: 5px;
 
-            background: linear-gradient(
-                90deg,
-                #5bc8ff,
-                #8bdcff,
-                #5bc8ff
-            );
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent 0%,
+                    #69d5ff 25%,
+                    white 50%,
+                    #69d5ff 75%,
+                    transparent
+                );
+
         }
 
-        .card::after {
+
+        .panel::after {
+
             content: "";
 
             position: absolute;
-            width: 180px;
-            height: 180px;
 
-            top: -90px;
-            right: -90px;
+            width: 280px;
+            height: 280px;
+
+            right: -150px;
+            bottom: -170px;
 
             border-radius: 50%;
 
-            background: rgba(83, 189, 247, 0.10);
+            border:
+                1px solid
+                rgba(89,199,247,0.25);
+
+            box-shadow:
+                0 0 0 20px
+                rgba(89,199,247,0.04),
+                0 0 0 40px
+                rgba(89,199,247,0.03);
+
+            pointer-events: none;
+
         }
 
-        .card.fade-next {
-            opacity: 0;
-            transform: translateX(-28px);
-            filter: blur(5px);
-        }
 
-        .card.fade-prev {
-            opacity: 0;
-            transform: translateX(28px);
-            filter: blur(5px);
-        }
+        /* =========================================
+           CORNER HUD
+        ========================================= */
 
-        /* =========================
-           卡片標頭
-        ========================= */
+        .corner {
 
-        .eyebrow {
-            position: relative;
-            z-index: 2;
-
-            color: var(--blue-dark);
-
-            font-size: 11px;
-            font-weight: 800;
-
-            letter-spacing: 2px;
-            text-transform: uppercase;
-
-            margin-bottom: 12px;
-        }
-
-        h1 {
-            position: relative;
-            z-index: 2;
-
-            margin: 0;
-
-            color: #1e3345;
-
-            font-size: clamp(38px, 8vw, 58px);
-            line-height: 1;
-
-            font-weight: 800;
-            letter-spacing: -2px;
-        }
-
-        .subtitle {
-            position: relative;
-            z-index: 2;
-
-            margin-top: 12px;
-            margin-bottom: 38px;
-
-            color: var(--text-soft);
-
-            font-size: 13px;
-            font-weight: 500;
-
-            letter-spacing: 0.4px;
-        }
-
-        /* =========================
-           資料
-        ========================= */
-
-        .data-list {
-            position: relative;
-            z-index: 2;
-
-            display: flex;
-            flex-direction: column;
-
-            gap: 12px;
-        }
-
-        .data-row {
-            display: flex;
-            align-items: center;
-
-            min-height: 72px;
-
-            padding: 14px 16px;
-
-            border-radius: 16px;
-
-            background: rgba(255, 255, 255, 0.72);
-            border: 1px solid rgba(130, 195, 225, 0.20);
-
-            transition:
-                transform 0.2s ease,
-                background 0.2s ease,
-                border-color 0.2s ease;
-        }
-
-        .data-row:hover {
-            transform: translateY(-2px);
-
-            background: rgba(255, 255, 255, 0.92);
-            border-color: rgba(83, 189, 247, 0.35);
-        }
-
-        .data-icon {
-            width: 34px;
-            height: 34px;
-
-            flex-shrink: 0;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            margin-right: 14px;
-
-            border-radius: 10px;
-
-            background: rgba(83, 189, 247, 0.12);
-
-            color: var(--blue-dark);
-
-            font-size: 14px;
-            font-weight: 800;
-        }
-
-        .data-content {
-            min-width: 0;
-        }
-
-        .label {
-            display: block;
-
-            margin-bottom: 5px;
-
-            color: #7c92a4;
-
-            font-size: 10px;
-            font-weight: 700;
-
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-        }
-
-        .value {
-            display: block;
-
-            color: #31485b;
-
-            font-size: 14px;
-            font-weight: 600;
-
-            line-height: 1.4;
-
-            word-break: break-word;
-        }
-
-        /* =========================
-           頁碼
-        ========================= */
-
-        .page-info {
             position: absolute;
 
-            right: 28px;
-            bottom: 23px;
+            width: 23px;
+            height: 23px;
 
-            color: #94a9b9;
+            opacity: 0.7;
+
+        }
+
+        .corner::before,
+        .corner::after {
+
+            content: "";
+
+            position: absolute;
+
+            background:
+                var(--blue);
+
+        }
+
+
+        .corner::before {
+
+            width: 100%;
+            height: 1px;
+
+        }
+
+
+        .corner::after {
+
+            width: 1px;
+            height: 100%;
+
+        }
+
+
+        .corner-tl {
+            top: 18px;
+            left: 18px;
+        }
+
+        .corner-tr {
+            top: 18px;
+            right: 18px;
+            transform: rotate(90deg);
+        }
+
+        .corner-bl {
+            bottom: 18px;
+            left: 18px;
+            transform: rotate(-90deg);
+        }
+
+        .corner-br {
+            bottom: 18px;
+            right: 18px;
+            transform: rotate(180deg);
+        }
+
+
+        /* =========================================
+           HEADER
+        ========================================= */
+
+        .header {
+
+            position: relative;
+
+            z-index: 2;
+
+            display: flex;
+
+            align-items:
+                center;
+
+            gap: 13px;
+
+        }
+
+
+        .header-line {
+
+            width: 42px;
+
+            height: 2px;
+
+            background:
+                var(--blue);
+
+            box-shadow:
+                0 0 10px
+                rgba(89,199,247,0.5);
+
+        }
+
+
+        .header-label {
 
             font-size: 10px;
+
+            font-weight: 700;
+
+            letter-spacing: 2.5px;
+
+            color:
+                var(--blue-dark);
+
+        }
+
+
+        /* =========================================
+           TITLE
+        ========================================= */
+
+        .title {
+
+            position: relative;
+
+            z-index: 2;
+
+            margin-top: 18px;
+
+            font-size:
+                clamp(52px, 9vw, 72px);
+
+            line-height: 0.95;
+
+            font-weight: 800;
+
+            letter-spacing: -2px;
+
+            color:
+                #ffffff;
+
+            text-shadow:
+                0 2px 12px
+                rgba(61,119,146,0.28);
+
+        }
+
+
+        .subtitle {
+
+            position: relative;
+
+            z-index: 2;
+
+            margin-top: 10px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            letter-spacing: 2px;
+
+            color:
+                #5d7888;
+
+        }
+
+
+        /* =========================================
+           DATA
+        ========================================= */
+
+        .data-grid {
+
+            position: relative;
+
+            z-index: 2;
+
+            margin-top: 38px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0,1fr));
+
+            gap: 12px;
+
+        }
+
+
+        .data-card {
+
+            position: relative;
+
+            min-height: 78px;
+
+            padding: 15px 16px;
+
+            background:
+                rgba(255,255,255,0.66);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.9);
+
+            transition:
+                transform 0.22s ease,
+                background 0.22s ease,
+                border-color 0.22s ease;
+
+        }
+
+
+        .data-card::before {
+
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            top: 0;
+
+            width: 3px;
+            height: 100%;
+
+            background:
+                var(--blue);
+
+            transform:
+                scaleY(0);
+
+            transition:
+                transform 0.22s ease;
+
+        }
+
+
+        .data-card:hover {
+
+            transform:
+                translateY(-3px);
+
+            background:
+                rgba(255,255,255,0.88);
+
+            border-color:
+                rgba(89,199,247,0.35);
+
+        }
+
+
+        .data-card:hover::before {
+
+            transform:
+                scaleY(1);
+
+        }
+
+
+        .data-label {
+
+            font-size: 9px;
+
             font-weight: 700;
 
             letter-spacing: 1.5px;
+
+            color:
+                #7993a2;
+
+            margin-bottom: 6px;
+
         }
 
-        /* =========================
-           翻頁按鈕
-        ========================= */
+
+        .data-value {
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            line-height: 1.35;
+
+            color:
+                #3b5666;
+
+        }
+
+
+        /* =========================================
+           PAGE
+        ========================================= */
+
+        .page {
+
+            position: absolute;
+
+            right: 28px;
+            bottom: 20px;
+
+            z-index: 4;
+
+            font-size: 9px;
+
+            font-weight: 700;
+
+            letter-spacing: 2px;
+
+            color:
+                #7191a2;
+
+        }
+
+
+        /* =========================================
+           NAVIGATION
+        ========================================= */
 
         .nav {
+
             position: fixed;
 
             top: 50%;
-            transform: translateY(-50%);
 
             z-index: 30;
 
-            width: 48px;
-            height: 48px;
+            transform:
+                translateY(-50%);
 
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
+            width: 54px;
+            height: 54px;
 
-            background: rgba(255, 255, 255, 0.80);
+            border:
+                1px solid
+                rgba(255,255,255,0.9);
 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background:
+                rgba(255,255,255,0.65);
+
+            backdrop-filter:
+                blur(12px);
+
+            -webkit-backdrop-filter:
+                blur(12px);
 
             box-shadow:
-                0 8px 24px rgba(65, 139, 180, 0.12);
+                0 10px 30px
+                rgba(60,125,155,0.12);
 
             cursor: pointer;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
-
-            color: var(--blue-dark);
 
             transition:
                 transform 0.2s ease,
                 background 0.2s ease,
                 box-shadow 0.2s ease;
+
         }
+
 
         .nav:hover {
-            background: #ffffff;
+
+            background:
+                rgba(255,255,255,0.92);
 
             box-shadow:
-                0 10px 28px rgba(65, 139, 180, 0.20);
+                0 12px 30px
+                rgba(60,125,155,0.22);
+
         }
 
+
         .nav:active {
-            transform: translateY(-50%) scale(0.92);
+
+            transform:
+                translateY(-50%)
+                scale(0.9);
+
         }
+
 
         .nav-left {
             left: 26px;
@@ -474,251 +886,390 @@
             right: 26px;
         }
 
-        .nav-arrow {
-            width: 8px;
-            height: 8px;
 
-            border-top: 2px solid currentColor;
-            border-right: 2px solid currentColor;
+        .arrow {
+
+            width: 10px;
+            height: 10px;
+
+            border-top:
+                2px solid
+                var(--blue-dark);
+
+            border-right:
+                2px solid
+                var(--blue-dark);
+
         }
+
 
         .arrow-left {
-            transform: rotate(-135deg);
-            margin-left: 3px;
+
+            transform:
+                rotate(-135deg);
+
+            margin-left: 5px;
+
         }
+
 
         .arrow-right {
-            transform: rotate(45deg);
-            margin-right: 3px;
+
+            transform:
+                rotate(45deg);
+
+            margin-right: 5px;
+
         }
 
-        /* =========================
-           音樂按鈕
-        ========================= */
 
-        .music-button {
+        /* =========================================
+           MUSIC
+        ========================================= */
+
+        .music {
+
             position: fixed;
 
-            right: 30px;
-            bottom: 28px;
+            z-index: 40;
 
-            z-index: 50;
-
-            width: 44px;
-            height: 44px;
-
-            border: 1px solid rgba(255, 255, 255, 0.85);
-            border-radius: 14px;
-
-            background: rgba(255, 255, 255, 0.78);
-
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-
-            box-shadow:
-                0 8px 24px rgba(65, 139, 180, 0.12);
-
-            color: var(--blue-dark);
-
-            cursor: pointer;
+            right: 28px;
+            bottom: 25px;
 
             display: flex;
+
             align-items: center;
-            justify-content: center;
 
-            font-size: 18px;
+            gap: 9px;
 
-            transition:
-                transform 0.2s ease,
-                background 0.2s ease;
         }
 
-        .music-button:hover {
-            background: #ffffff;
-            transform: translateY(-2px);
-        }
 
-        .music-button.playing {
-            box-shadow:
-                0 0 0 5px rgba(83, 189, 247, 0.08),
-                0 8px 24px rgba(65, 139, 180, 0.15);
-        }
+        .music-label {
 
-        .music-status {
-            position: fixed;
+            padding:
+                7px 12px;
 
-            right: 84px;
-            bottom: 30px;
+            background:
+                rgba(255,255,255,0.68);
 
-            z-index: 50;
+            border:
+                1px solid
+                rgba(255,255,255,0.9);
 
-            max-width: 220px;
+            backdrop-filter:
+                blur(10px);
 
-            padding: 9px 13px;
+            font-size: 9px;
 
-            border-radius: 10px;
-
-            background: rgba(255, 255, 255, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-
-            color: #61778a;
-
-            font-size: 10px;
             font-weight: 700;
 
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+
+            color:
+                #5f7e8f;
 
             opacity: 0;
 
-            transform: translateY(8px);
-
-            pointer-events: none;
+            transform:
+                translateX(10px);
 
             transition:
                 opacity 0.25s ease,
                 transform 0.25s ease;
 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            pointer-events: none;
+
         }
 
-        .music-status.show {
+
+        .music:hover .music-label {
+
             opacity: 1;
-            transform: translateY(0);
+
+            transform:
+                translateX(0);
+
         }
 
-        /* =========================
-           Mobile
-        ========================= */
+
+        .music-button {
+
+            width: 48px;
+            height: 48px;
+
+            border:
+                1px solid
+                rgba(255,255,255,0.95);
+
+            background:
+                rgba(255,255,255,0.78);
+
+            color:
+                var(--blue-dark);
+
+            box-shadow:
+                0 10px 30px
+                rgba(60,125,155,0.17);
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+
+        }
+
+
+        .music-button:hover {
+
+            transform:
+                translateY(-3px);
+
+            background:
+                white;
+
+        }
+
+
+        .music-button.playing {
+
+            color:
+                #ffffff;
+
+            background:
+                var(--blue);
+
+            box-shadow:
+                0 0 0 5px
+                rgba(89,199,247,0.13),
+                0 10px 30px
+                rgba(60,125,155,0.20);
+
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
 
         @media (max-width: 700px) {
-            .top-bar {
-                left: 18px;
-                right: 18px;
-                top: 20px;
+
+            .top-ui {
+
+                top: 18px;
+
+                left: 16px;
+                right: 16px;
+
             }
 
-            .main {
+
+            .side-info {
+
+                display: none;
+
+            }
+
+
+            .panel {
+
+                width: 90vw;
+
+                min-height: 430px;
+
                 padding:
-                    70px
-                    18px
-                    90px;
+                    38px 24px 46px;
+
             }
 
-            .card {
-                width: 100%;
-                min-height: auto;
 
-                padding: 34px 22px 48px;
+            .title {
 
-                border-radius: 22px;
+                font-size: 48px;
+
             }
 
-            h1 {
-                font-size: 40px;
+
+            .data-grid {
+
+                grid-template-columns:
+                    1fr;
+
+                margin-top: 28px;
+
             }
 
-            .subtitle {
-                margin-bottom: 25px;
-            }
-
-            .data-row {
-                min-height: 66px;
-                padding: 12px 13px;
-            }
-
-            .value {
-                font-size: 13px;
-            }
 
             .nav {
+
                 width: 42px;
                 height: 42px;
+
             }
+
 
             .nav-left {
-                left: 10px;
+
+                left: 9px;
+
             }
+
 
             .nav-right {
-                right: 10px;
+
+                right: 9px;
+
             }
 
-            .music-button {
-                right: 18px;
-                bottom: 18px;
+
+            .music {
+
+                right: 15px;
+                bottom: 15px;
+
             }
 
-            .music-status {
-                right: 72px;
-                bottom: 21px;
-                max-width: 160px;
+
+            .music-label {
+
+                display: none;
+
             }
 
-            .page-info {
-                right: 20px;
-                bottom: 17px;
-            }
         }
+
     </style>
+
 </head>
+
 
 <body>
 
+
+    <!-- Background -->
+
     <div class="background">
+
         <div class="grid"></div>
+
     </div>
 
-    <div class="top-bar">
-        <div class="top-left">
-            <span class="dot"></span>
+
+    <!-- Top UI -->
+
+    <header class="top-ui">
+
+        <div class="brand">
+
+            <span class="brand-mark"></span>
+
             <span>SLES ARCHIVE</span>
+
         </div>
 
-        <span>PROFILE / 01</span>
-    </div>
+        <div class="top-right">
 
-    <!-- 左 -->
+            <span>PERSONAL DATABASE</span>
+
+            <span>ARCHIVE // 01</span>
+
+        </div>
+
+    </header>
+
+
+    <!-- Side -->
+
+    <aside class="side-info">
+
+        <div class="side-line"></div>
+
+        <div class="side-text">
+            BLUE ARCHIVE
+        </div>
+
+        <div class="side-line"></div>
+
+    </aside>
+
+
+    <!-- Navigation -->
+
     <button
         class="nav nav-left"
         id="btn-prev"
-        aria-label="Previous Page"
+        aria-label="Previous"
     >
-        <span class="nav-arrow arrow-left"></span>
+
+        <span class="arrow arrow-left"></span>
+
     </button>
 
-    <!-- 右 -->
+
     <button
         class="nav nav-right"
         id="btn-next"
-        aria-label="Next Page"
+        aria-label="Next"
     >
-        <span class="nav-arrow arrow-right"></span>
+
+        <span class="arrow arrow-right"></span>
+
     </button>
+
+
+    <!-- Main -->
 
     <main class="main">
 
-        <section class="card" id="ui-card">
+        <section class="panel" id="panel">
 
-            <div class="eyebrow" id="eyebrow">
-                RECORD OF LIBRARIAN
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+
+
+            <div class="header">
+
+                <span class="header-line"></span>
+
+                <span
+                    class="header-label"
+                    id="header-label"
+                >
+                    RECORD OF LIBRARIAN
+                </span>
+
             </div>
 
-            <h1 id="title">
-                Sles
-            </h1>
 
-            <div class="subtitle" id="subtitle">
+            <div
+                class="title"
+                id="title"
+            >
+                Sles
+            </div>
+
+
+            <div
+                class="subtitle"
+                id="subtitle"
+            >
                 PERSONAL ARCHIVE
             </div>
 
-            <div class="data-list" id="data-list"></div>
 
-            <div class="page-info" id="page-info">
+            <div
+                class="data-grid"
+                id="data-grid"
+            ></div>
+
+
+            <div
+                class="page"
+                id="page"
+            >
                 01 / 03
             </div>
 
@@ -726,290 +1277,563 @@
 
     </main>
 
-    <div
-        class="music-status"
-        id="music-status"
-    >
-        MUSIC OFF
+
+    <!-- Music -->
+
+    <div class="music">
+
+        <div
+            class="music-label"
+            id="music-label"
+        >
+            MUSIC OFF
+        </div>
+
+        <button
+            class="music-button"
+            id="music-button"
+            aria-label="Toggle Music"
+        >
+            ♫
+        </button>
+
     </div>
 
-    <button
-        class="music-button"
-        id="music-button"
-        title="Music"
-        aria-label="Toggle Music"
-    >
-        ♫
-    </button>
+
+    <!-- Hidden YouTube -->
+
+    <div
+        id="youtube-player"
+        style="
+            position:fixed;
+            width:1px;
+            height:1px;
+            left:-9999px;
+            top:-9999px;
+            pointer-events:none;
+        "
+    ></div>
+
 
     <script>
 
-        /* =====================================
-           頁面資料
-        ===================================== */
+        /* =========================================
+           PAGE DATA
+        ========================================= */
 
         const pages = [
 
             {
-                eyebrow: "RECORD OF LIBRARIAN",
 
-                title: "Sles",
+                label:
+                    "RECORD OF LIBRARIAN",
 
-                subtitle: "PERSONAL ARCHIVE",
+                title:
+                    "Sles",
+
+                subtitle:
+                    "PERSONAL ARCHIVE",
 
                 rows: [
+
                     {
-                        icon: "✦",
-                        label: "Identity",
-                        value: "Human / Developer"
+                        label:
+                            "IDENTITY",
+
+                        value:
+                            "Human / Developer"
                     },
+
                     {
-                        icon: "♡",
-                        label: "Likes",
-                        value: "Game Development / Novels"
+                        label:
+                            "LIKES",
+
+                        value:
+                            "Develop / Novel"
                     },
+
                     {
-                        icon: "◷",
-                        label: "Birthday",
-                        value: "09 / 21"
+                        label:
+                            "BIRTHDAY",
+
+                        value:
+                            "09 / 21"
+                    },
+
+                    {
+                        label:
+                            "STATUS",
+
+                        value:
+                            "Active"
                     }
+
                 ]
+
             },
 
+
             {
-                eyebrow: "ARCHIVE DATABASE",
 
-                title: "Favorites",
+                label:
+                    "ARCHIVE DATABASE",
 
-                subtitle: "PREFERENCES / ARCHIVE",
+                title:
+                    "Favorites",
+
+                subtitle:
+                    "PREFERENCES / ARCHIVE",
 
                 rows: [
+
                     {
-                        icon: "▣",
-                        label: "Games",
-                        value: "Project Moon"
+                        label:
+                            "GAME",
+
+                        value:
+                            "Project Moon"
                     },
+
                     {
-                        icon: "♫",
-                        label: "Music",
-                        value: "Mili / Gone Angels"
+                        label:
+                            "MUSIC",
+
+                        value:
+                            "Mili / Gone Angels"
                     },
+
                     {
-                        icon: "◇",
-                        label: "World",
-                        value: "Library of Ruina / Limbus Company / Lobotomy Corporation"
+                        label:
+                            "UNIVERSE",
+
+                        value:
+                            "Library of Ruina"
+                    },
+
+                    {
+                        label:
+                            "INTEREST",
+
+                        value:
+                            "Games / Novels / Art"
                     }
+
                 ]
+
             },
 
+
             {
-                eyebrow: "CREATIVE WORKS",
 
-                title: "Works",
+                label:
+                    "CREATIVE WORKS",
 
-                subtitle: "CREATIVE / SCRIPTING",
+                title:
+                    "Works",
+
+                subtitle:
+                    "CREATIVE / DEVELOPMENT",
 
                 rows: [
+
                     {
-                        icon: "⌘",
-                        label: "Development",
-                        value: "Roblox Luau / Web Front-end"
+                        label:
+                            "ENGINE",
+
+                        value:
+                            "Roblox Luau"
                     },
+
                     {
-                        icon: "◈",
-                        label: "Current Status",
-                        value: "Active Development"
+                        label:
+                            "WEB",
+
+                        value:
+                            "Front-end Development"
                     },
+
                     {
-                        icon: "＋",
-                        label: "Focus",
-                        value: "Game / Art / Story / Music"
+                        label:
+                            "FOCUS",
+
+                        value:
+                            "Game / Story / Art / Music"
+                    },
+
+                    {
+                        label:
+                            "STATUS",
+
+                        value:
+                            "Active Development"
                     }
+
                 ]
+
             }
 
         ];
 
-        /* =====================================
+
+        /* =========================================
            DOM
-        ===================================== */
+        ========================================= */
 
-        const card = document.getElementById("ui-card");
+        const panel =
+            document.getElementById(
+                "panel"
+            );
 
-        const eyebrow = document.getElementById("eyebrow");
-        const title = document.getElementById("title");
-        const subtitle = document.getElementById("subtitle");
+        const headerLabel =
+            document.getElementById(
+                "header-label"
+            );
 
-        const dataList = document.getElementById("data-list");
-        const pageInfo = document.getElementById("page-info");
+        const title =
+            document.getElementById(
+                "title"
+            );
 
-        const btnPrev = document.getElementById("btn-prev");
-        const btnNext = document.getElementById("btn-next");
+        const subtitle =
+            document.getElementById(
+                "subtitle"
+            );
+
+        const dataGrid =
+            document.getElementById(
+                "data-grid"
+            );
+
+        const page =
+            document.getElementById(
+                "page"
+            );
+
+        const btnPrev =
+            document.getElementById(
+                "btn-prev"
+            );
+
+        const btnNext =
+            document.getElementById(
+                "btn-next"
+            );
+
 
         let currentPage = 0;
-        let transitioning = false;
 
-        /* =====================================
-           渲染
-        ===================================== */
+        let changingPage = false;
+
+
+        /* =========================================
+           RENDER
+        ========================================= */
 
         function renderPage(index) {
 
-            const page = pages[index];
+            const data =
+                pages[index];
 
-            eyebrow.textContent = page.eyebrow;
-            title.textContent = page.title;
-            subtitle.textContent = page.subtitle;
+            headerLabel.textContent =
+                data.label;
 
-            dataList.innerHTML = "";
+            title.textContent =
+                data.title;
 
-            page.rows.forEach((row) => {
+            subtitle.textContent =
+                data.subtitle;
 
-                const element = document.createElement("div");
+            dataGrid.innerHTML = "";
 
-                element.className = "data-row";
 
-                element.innerHTML = `
-                    <div class="data-icon">
-                        ${row.icon}
-                    </div>
+            data.rows.forEach(
+                row => {
 
-                    <div class="data-content">
-                        <span class="label">
+                    const element =
+                        document.createElement(
+                            "div"
+                        );
+
+                    element.className =
+                        "data-card";
+
+                    element.innerHTML = `
+
+                        <div class="data-label">
                             ${row.label}
-                        </span>
+                        </div>
 
-                        <span class="value">
+                        <div class="data-value">
                             ${row.value}
-                        </span>
-                    </div>
-                `;
+                        </div>
 
-                dataList.appendChild(element);
-            });
+                    `;
 
-            pageInfo.textContent =
-                `${String(index + 1).padStart(2, "0")} / ${String(pages.length).padStart(2, "0")}`;
+                    dataGrid.appendChild(
+                        element
+                    );
+
+                }
+            );
+
+
+            page.textContent =
+                `${String(index + 1).padStart(2,"0")} / ${String(pages.length).padStart(2,"0")}`;
+
         }
 
-        /* =====================================
-           翻頁
-        ===================================== */
+
+        /* =========================================
+           PAGE SWITCH
+        ========================================= */
 
         function switchPage(direction) {
 
-            if (transitioning) return;
+            if (changingPage)
+                return;
 
-            transitioning = true;
+            changingPage = true;
 
-            const animationClass =
+
+            const className =
                 direction === "next"
-                    ? "fade-next"
-                    : "fade-prev";
+                    ? "page-next"
+                    : "page-prev";
 
-            card.classList.add(animationClass);
 
-            setTimeout(() => {
+            panel.style.opacity = "0";
 
-                if (direction === "next") {
+            panel.style.transform =
+                direction === "next"
+                    ? "translateX(-25px)"
+                    : "translateX(25px)";
 
-                    currentPage =
-                        (currentPage + 1) % pages.length;
 
-                } else {
+            setTimeout(
+                () => {
 
-                    currentPage =
-                        (currentPage - 1 + pages.length) % pages.length;
+                    if (direction === "next") {
+
+                        currentPage =
+                            (currentPage + 1)
+                            % pages.length;
+
+                    } else {
+
+                        currentPage =
+                            (currentPage - 1 + pages.length)
+                            % pages.length;
+
+                    }
+
+
+                    renderPage(
+                        currentPage
+                    );
+
+
+                    panel.style.transform =
+                        direction === "next"
+                            ? "translateX(25px)"
+                            : "translateX(-25px)";
+
+
+                    requestAnimationFrame(
+                        () => {
+
+                            panel.style.opacity =
+                                "1";
+
+                            panel.style.transform =
+                                "translateX(0)";
+
+                        }
+                    );
+
+
+                    setTimeout(
+                        () => {
+                            changingPage =
+                                false;
+                        },
+                        300
+                    );
+
+                },
+                240
+            );
+
+        }
+
+
+        /* =========================================
+           BUTTONS
+        ========================================= */
+
+        btnNext.addEventListener(
+            "click",
+            () => {
+
+                switchPage("next");
+
+                startMusic();
+
+            }
+        );
+
+
+        btnPrev.addEventListener(
+            "click",
+            () => {
+
+                switchPage("prev");
+
+                startMusic();
+
+            }
+        );
+
+
+        /* =========================================
+           KEYBOARD
+        ========================================= */
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key ===
+                    "ArrowRight" ||
+                    event.key.toLowerCase()
+                    === "d"
+                ) {
+
+                    switchPage("next");
+
+                    startMusic();
 
                 }
 
-                renderPage(currentPage);
 
-                card.classList.remove(animationClass);
+                if (
+                    event.key ===
+                    "ArrowLeft" ||
+                    event.key.toLowerCase()
+                    === "a"
+                ) {
 
-                setTimeout(() => {
-                    transitioning = false;
-                }, 240);
+                    switchPage("prev");
 
-            }, 240);
-        }
+                    startMusic();
 
-        btnNext.addEventListener("click", () => {
-            switchPage("next");
-        });
+                }
 
-        btnPrev.addEventListener("click", () => {
-            switchPage("prev");
-        });
-
-        /* =====================================
-           鍵盤
-        ===================================== */
-
-        document.addEventListener("keydown", (event) => {
-
-            if (
-                event.key === "ArrowRight" ||
-                event.key.toLowerCase() === "d"
-            ) {
-                switchPage("next");
             }
+        );
 
-            if (
-                event.key === "ArrowLeft" ||
-                event.key.toLowerCase() === "a"
-            ) {
-                switchPage("prev");
-            }
 
-        });
-
-        /* =====================================
-           手機滑動
-        ===================================== */
+        /* =========================================
+           TOUCH SWIPE
+        ========================================= */
 
         let touchStartX = 0;
 
-        card.addEventListener(
+
+        panel.addEventListener(
             "touchstart",
-            (event) => {
+            event => {
+
                 touchStartX =
-                    event.changedTouches[0].screenX;
+                    event.changedTouches[0]
+                        .screenX;
+
             },
-            { passive: true }
+            {
+                passive: true
+            }
         );
 
-        card.addEventListener(
-            "touchend",
-            (event) => {
 
-                const touchEndX =
-                    event.changedTouches[0].screenX;
+        panel.addEventListener(
+            "touchend",
+            event => {
+
+                const endX =
+                    event.changedTouches[0]
+                        .screenX;
 
                 const distance =
-                    touchEndX - touchStartX;
+                    endX - touchStartX;
 
-                if (Math.abs(distance) < 50) {
+
+                if (
+                    Math.abs(distance) < 50
+                )
                     return;
-                }
+
+
+                startMusic();
+
 
                 if (distance < 0) {
+
                     switchPage("next");
+
                 } else {
+
                     switchPage("prev");
+
                 }
 
             },
-            { passive: true }
+            {
+                passive: true
+            }
         );
 
-        /* =====================================
-           初始
-        ===================================== */
+
+        /* =========================================
+           MOUSE PARALLAX
+        ========================================= */
+
+        document.addEventListener(
+            "mousemove",
+            event => {
+
+                const x =
+                    event.clientX /
+                    window.innerWidth *
+                    100;
+
+                const y =
+                    event.clientY /
+                    window.innerHeight *
+                    100;
+
+
+                panel.style.setProperty(
+                    "--mouse-x",
+                    `${x}%`
+                );
+
+                panel.style.setProperty(
+                    "--mouse-y",
+                    `${y}%`
+                );
+
+            }
+        );
+
+
+        /* =========================================
+           INITIAL
+        ========================================= */
 
         renderPage(0);
 
     </script>
+
 
     <script src="music_module.js"></script>
 
