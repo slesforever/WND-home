@@ -3,258 +3,429 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARCHIVE SYSTEM - Commercial HUD Boot Screen</title>
+  <title>SCHALE // ARCHIVE SYSTEM</title>
   <style>
     :root {
-      --cyan: #00f0ff;
-      --cyan-glow: rgba(0, 240, 255, 0.4);
-      --bg-dark: #030712;
+      --ba-blue: #00a3ff;
+      --ba-navy: #12213f;
+      --ba-light-bg: rgba(240, 246, 255, 0.82);
+      --ba-glass-border: rgba(255, 255, 255, 0.8);
+      --text-dark: #1e293b;
+      --text-sub: #64748b;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", sans-serif;
+    }
+
     body {
-      background-color: var(--bg-dark);
-      color: #fff;
-      font-family: 'Consolas', 'Courier New', monospace;
-      overflow: hidden;
+      width: 100vw;
       height: 100vh;
+      overflow: hidden;
+      background: url('maxresdefault.jpg') center/cover no-repeat fixed;
+      display: flex;
+      flex-direction: column;
+      color: var(--text-dark);
+      position: relative;
     }
 
-    /* 隱藏 YouTube 播放器 */
-    #youtube-player {
+    /* 蔚藍檔案風格：清透明亮的薄霧覆蓋 */
+    body::before {
+      content: '';
       position: absolute;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
+      inset: 0;
+      background: rgba(235, 243, 255, 0.25);
+      backdrop-filter: blur(4px);
+      z-index: 0;
     }
 
-    /* 全螢幕開機動畫容器 */
+    /* ==========================================
+       1. 蔚藍檔案風格開機動畫 (Boot Screen)
+       ========================================== */
     #boot-screen {
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: radial-gradient(circle at center, #0a192f 0%, #020611 100%);
+      inset: 0;
+      background: rgba(245, 249, 255, 0.88);
+      backdrop-filter: blur(25px) saturate(130%);
       z-index: 9999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* 背景戰術網格與掃描線 */
-    .hud-grid {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: 
-        linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-    .scanlines {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
-      background-size: 100% 4px;
+    #boot-screen.fade-out {
+      opacity: 0;
+      transform: scale(1.04);
       pointer-events: none;
     }
 
-    /* 中央幾何菱形 Core */
-    .core-container {
+    /* BA 標誌性光環與極簡中心 */
+    .ba-halo-container {
       position: relative;
-      width: 160px;
-      height: 160px;
+      width: 120px;
+      height: 120px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 2.5rem;
-    }
-    .diamond-outer {
-      position: absolute;
-      width: 110px;
-      height: 110px;
-      border: 2px solid var(--cyan);
-      transform: rotate(45deg);
-      box-shadow: 0 0 15px var(--cyan-glow), inset 0 0 15px var(--cyan-glow);
-      animation: rotateOuter 10s linear infinite;
-    }
-    .diamond-inner {
-      position: absolute;
-      width: 70px;
-      height: 70px;
-      border: 1px dashed var(--cyan);
-      transform: rotate(45deg);
-      animation: rotateInner 5s linear infinite reverse;
-    }
-    .diamond-center {
-      width: 20px;
-      height: 20px;
-      background: var(--cyan);
-      transform: rotate(45deg);
-      box-shadow: 0 0 20px var(--cyan);
-      animation: pulse 1.5s ease-in-out infinite alternate;
+      margin-bottom: 24px;
     }
 
-    @keyframes rotateOuter { 0% { transform: rotate(45deg); } 100% { transform: rotate(405deg); } }
-    @keyframes rotateInner { 0% { transform: rotate(45deg); } 100% { transform: rotate(405deg); } }
-    @keyframes pulse { 0% { opacity: 0.4; transform: rotate(45deg) scale(0.8); } 100% { opacity: 1; transform: rotate(45deg) scale(1.2); } }
+    .ba-halo {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      border: 2px solid var(--ba-blue);
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(0, 163, 255, 0.3);
+      animation: haloPulse 3s ease-in-out infinite alternate;
+    }
 
-    /* 進度面板 */
-    .progress-box {
-      width: 360px;
-      text-align: center;
-      position: relative;
-      z-index: 2;
+    .ba-halo-inner {
+      position: absolute;
+      width: 45px;
+      height: 45px;
+      border: 1px dashed var(--ba-blue);
+      border-radius: 50%;
+      animation: spin 12s linear infinite;
     }
-    .status-log {
-      font-size: 12px;
-      color: rgba(0, 240, 255, 0.85);
-      height: 22px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+
+    .ba-cross {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: var(--ba-blue);
+      clip-path: polygon(35% 0%, 65% 0%, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0% 65%, 0% 35%, 35% 35%);
     }
-    .bar-bg {
+
+    @keyframes haloPulse {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      100% { transform: scale(1.05); opacity: 1; }
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .boot-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: var(--ba-navy);
+      margin-bottom: 6px;
+    }
+
+    .boot-subtitle {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--ba-blue);
+      margin-bottom: 32px;
+    }
+
+    .connect-btn {
+      padding: 12px 48px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: #ffffff;
+      background: var(--ba-blue);
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 8px 20px rgba(0, 163, 255, 0.35);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .connect-btn:hover {
+      background: #008ee6;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(0, 163, 255, 0.45);
+    }
+
+    /* ==========================================
+       2. 主 UI 介面 (BA 白藍透光風格)
+       ========================================== */
+    .top-bar {
       width: 100%;
-      height: 6px;
-      background: rgba(0, 240, 255, 0.1);
-      border: 1px solid var(--cyan);
-      margin: 12px 0;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 32px;
+      z-index: 10;
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--ba-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--ba-blue);
+      border-radius: 50%;
+    }
+
+    .main-viewport {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      z-index: 10;
+    }
+
+    .glass-card {
+      width: 880px;
+      max-width: 92vw;
+      height: 520px;
+      background: var(--ba-light-bg);
+      backdrop-filter: blur(20px) saturate(120%);
+      border: 1px solid var(--ba-glass-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(18, 33, 63, 0.12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       position: relative;
-      box-shadow: 0 0 8px var(--cyan-glow);
     }
-    .bar-fill {
-      width: 0%;
-      height: 100%;
-      background: var(--cyan);
-      box-shadow: 0 0 12px var(--cyan);
-      transition: width 0.08s linear;
+
+    .tab-bar {
+      display: flex;
+      background: rgba(255, 255, 255, 0.5);
+      border-bottom: 1px solid rgba(220, 230, 245, 0.8);
+      padding: 0 20px;
     }
-    .percent-text {
-      color: var(--cyan);
-      font-size: 14px;
-      font-weight: bold;
+
+    .tab-item {
+      padding: 16px 28px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-sub);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .tab-item:hover { color: var(--ba-navy); }
+
+    .tab-item.active {
+      color: var(--ba-blue);
+    }
+
+    .tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 20px; right: 20px;
+      height: 3px;
+      background: var(--ba-blue);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .content-body {
+      flex: 1;
+      position: relative;
+      padding: 32px;
+    }
+
+    .page {
+      position: absolute;
+      inset: 32px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      gap: 28px;
+    }
+
+    .page.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* 左側角色卡 */
+    .user-profile-box {
+      width: 210px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid #ffffff;
+      border-radius: 14px;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    .avatar-box {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: #eaf4ff;
+      border: 2px solid var(--ba-blue);
+      display: flex; justify-content: center; align-items: center;
+      font-size: 18px; font-weight: 800;
+      color: var(--ba-blue);
+      margin-bottom: 14px;
+    }
+
+    .user-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ba-navy);
       letter-spacing: 1px;
     }
 
-    /* 商業級進入按鈕 */
-    .start-btn {
-      display: none;
-      margin-top: 15px;
-      padding: 14px 36px;
-      background: rgba(0, 240, 255, 0.1);
-      border: 2px solid var(--cyan);
-      color: var(--cyan);
-      font-size: 15px;
-      font-weight: bold;
-      letter-spacing: 3px;
-      cursor: pointer;
-      text-shadow: 0 0 8px var(--cyan);
-      box-shadow: 0 0 20px var(--cyan-glow);
-      clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
-      transition: all 0.25s ease;
+    .user-role {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ba-blue);
+      letter-spacing: 1px;
+      margin-top: 2px;
     }
-    .start-btn:hover {
-      background: var(--cyan);
-      color: #000;
-      box-shadow: 0 0 30px var(--cyan);
-      text-shadow: none;
+
+    .detail-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .placeholder-box {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(220, 230, 245, 0.9);
+      border-radius: 12px;
+      padding: 20px;
+      color: var(--text-dark);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* 音樂按鈕 */
+    .audio-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--ba-blue);
+      color: var(--ba-blue);
+      padding: 8px 20px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 163, 255, 0.15);
+    }
+
+    .audio-btn:hover {
+      background: var(--ba-blue);
+      color: #ffffff;
+    }
+
+    #yt-player-container {
+      position: absolute;
+      width: 0; height: 0;
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- 音樂播放器載入區 (Unwelcome School) -->
-  <div id="youtube-player"></div>
-
-  <!-- 開機動畫遮罩 -->
-  <div id="boot-screen">
-    <div class="hud-grid"></div>
-    <div class="scanlines"></div>
-
-    <div class="core-container">
-      <div class="diamond-outer"></div>
-      <div class="diamond-inner"></div>
-      <div class="diamond-center"></div>
-    </div>
-
-    <div class="progress-box">
-      <div class="status-log" id="status-text">SYSTEM INITIATING...</div>
-      <div class="bar-bg">
-        <div class="bar-fill" id="bar-fill"></div>
-      </div>
-      <div class="percent-text" id="percent-text">0%</div>
-      <button id="start-btn" class="start-btn">INITIALIZE SYSTEM [ENTER]</button>
-    </div>
+  <div id="yt-player-container">
+    <div id="yt-player"></div>
   </div>
 
-  <script>
-    // 1. YouTube Iframe API 載入設定
-    var player;
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('youtube-player', {
-        videoId: 'eMqWJDP28p8', // Unwelcome School
-        playerVars: {
-          'autoplay': 0,
-          'controls': 0,
-          'loop': 1,
-          'playlist': 'eMqWJDP28p8'
-        }
-      });
-    }
+  <!-- 1. 蔚藍檔案風格開機畫面 -->
+  <div id="boot-screen">
+    <div class="ba-halo-container">
+      <div class="ba-halo"></div>
+      <div class="ba-halo-inner"></div>
+      <div class="ba-cross"></div>
+    </div>
+    <div class="boot-title">SCHALE ARCHIVE</div>
+    <div class="boot-subtitle">SYSTEM READY TO CONNECT</div>
+    <button class="connect-btn" onclick="startSystem()">TOUCH TO START</button>
+  </div>
 
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  <!-- 2. 頂部列 -->
+  <header class="top-bar">
+    <div class="brand-title">SCHALE OS // WND</div>
+  </header>
 
-    // 2. 模擬高階系統診斷 Log 載入動畫
-    let percent = 0;
-    const barFill = document.getElementById('bar-fill');
-    const percentText = document.getElementById('percent-text');
-    const statusText = document.getElementById('status-text');
-    const startBtn = document.getElementById('start-btn');
-    const bootScreen = document.getElementById('boot-screen');
+  <!-- 3. 主面板 -->
+  <main class="main-viewport">
+    <div class="glass-card">
+      <nav class="tab-bar">
+        <div class="tab-item active" onclick="switchTab(0)">PROFILE</div>
+        <div class="tab-item" onclick="switchTab(1)">MESSAGES</div>
+        <div class="tab-item" onclick="switchTab(2)">ARCHIVE</div>
+      </nav>
 
-    const logs = [
-      "AUTHENTICATING CREDENTIALS...",
-      "ALLOCATING HUD GRAPHICS...",
-      "MOUNTING AUDIO CORE [Unwelcome School]...",
-      "DECRYPTING ARCHIVE DATA...",
-      "SYSTEM CHECK COMPLETED."
-    ];
+      <div class="content-body">
+        <!-- PAGE 1: Profile -->
+        <div class="page active">
+          <div class="user-profile-box">
+            <div class="avatar-box">WND</div>
+            <div class="user-name">WND</div>
+            <div class="user-role">STUDENT</div>
+          </div>
+          <div class="detail-container">
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-blue);">[ 個人檔案 / PROFILE ]</strong><br>
+              在此填寫 WND 的個人簡介...
+            </div>
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-blue);">[ 專長領域 / SKILLS ]</strong><br>
+              預留技能與專案簡歷位置...
+            </div>
+          </div>
+        </div>
 
-    const timer = setInterval(() => {
-      percent += Math.floor(Math.random() * 5) + 1;
-      if (percent >= 100) {
-        percent = 100;
-        clearInterval(timer);
-        barFill.style.width = '100%';
-        statusText.innerText = "SYSTEM READY - CLICK TO START";
-        percentText.style.display = 'none';
-        startBtn.style.display = 'inline-block';
-      } else {
-        barFill.style.width = percent + '%';
-        percentText.innerText = percent + '%';
-        let logIndex = Math.floor((percent / 100) * logs.length);
-        statusText.innerText = logs[Math.min(logIndex, logs.length - 1)];
-      }
-    }, 40);
+        <!-- PAGE 2: Messages -->
+        <div class="page">
+          <div class="detail-container" style="width: 100%;">
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-blue);">[ 訊息紀錄 / MESSAGES ]</strong><br>
+              預留對話紀錄區塊...
+            </div>
+          </div>
+        </div>
 
-    // 3. 點擊進入時播放音樂並解鎖頁面
-    startBtn.addEventListener('click', () => {
-      if (player && typeof player.playVideo === 'function') {
-        player.unMute();
-        player.setVolume(80);
-        player.playVideo();
-      }
-      bootScreen.style.opacity = '0';
-      bootScreen.style.transform = 'scale(1.05)';
-      setTimeout(() => {
-        bootScreen.style.display = 'none';
-      }, 800);
-    });
-  </script>
+        <!-- PAGE 3: Archive -->
+        <div class="page">
+          <div class="detail-container" style="width: 100%;">
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-blue);">[ 作品歸檔 / WORK ARCHIVE ]</strong><br>
+              預留作品與檔案紀錄位置...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="audio-btn" onclick="toggleBgm()">
+        <span id="bgm-icon">♪</span> BGM CONTROL
+      </button>
+    </div>
+  </main>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="music_module.js"></script>
 </body>
 </html>
