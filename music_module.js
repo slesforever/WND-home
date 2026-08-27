@@ -10,7 +10,7 @@
     if (existingPlayer) existingPlayer.remove();
 
     const tracks = [
-        { name: "Library of Ruina - Theme02", id: "On4Hk6b1KsY" }
+        { name: "Unwelcome School", id: "DAuAE_1cLVFRSHPA" }
     ];
 
     let player;
