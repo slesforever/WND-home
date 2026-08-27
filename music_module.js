@@ -1,37 +1,68 @@
 (function () {
 
     /* =====================================================
-       CONFIG
+       DEFAULT TRACK
     ===================================================== */
 
-    const MUSIC_ID =
-        "eMqWJDP28p8";
+    const tracks = [
+
+        {
+            name:
+                "Background Music",
+
+            id:
+                "eMqWJDP28p8"
+
+        }
+
+    ];
 
 
     let player = null;
 
     let playerReady = false;
 
+    let currentTrackIndex = 0;
+
     let playing = false;
 
-    let apiLoading = false;
 
-    let bootStarted = false;
-
+    /* =====================================================
+       DOM
+    ===================================================== */
 
     const musicButton =
         document.getElementById(
             "music-button"
         );
 
-    const musicLabel =
+
+    const playlist =
         document.getElementById(
-            "music-label"
+            "playlist"
+        );
+
+
+    const playlistList =
+        document.getElementById(
+            "playlist-list"
+        );
+
+
+    const youtubeInput =
+        document.getElementById(
+            "youtube-input"
+        );
+
+
+    const youtubeAdd =
+        document.getElementById(
+            "youtube-add"
         );
 
 
     /* =====================================================
-       AUDIO ENGINE
+       AUDIO CONTEXT
     ===================================================== */
 
     let audioContext = null;
@@ -65,8 +96,12 @@
     }
 
 
+    window.resumeInterfaceAudio =
+        getAudioContext;
+
+
     /* =====================================================
-       ORIGINAL UI SOUND
+       SFX
     ===================================================== */
 
     function playSfx(type) {
@@ -76,18 +111,22 @@
             const ctx =
                 getAudioContext();
 
+
             const now =
                 ctx.currentTime;
 
 
-            /*
-             * BOOT
-             */
+            /* =============================================
+               BOOT
+            ============================================= */
 
-            if (type === "boot") {
+            if (
+                type === "boot"
+            ) {
 
                 const osc =
                     ctx.createOscillator();
+
 
                 const gain =
                     ctx.createGain();
@@ -98,55 +137,58 @@
 
 
                 osc.frequency.setValueAtTime(
-                    180,
+                    220,
                     now
                 );
 
 
                 osc.frequency.exponentialRampToValueAtTime(
-                    720,
-                    now + 0.75
+                    780,
+                    now + .75
                 );
 
 
                 gain.gain.setValueAtTime(
-                    0.0001,
+                    .0001,
                     now
                 );
 
 
                 gain.gain.exponentialRampToValueAtTime(
-                    0.06,
-                    now + 0.20
+                    .05,
+                    now + .18
                 );
 
 
                 gain.gain.exponentialRampToValueAtTime(
-                    0.0001,
-                    now + 1.1
+                    .0001,
+                    now + 1.05
                 );
 
 
-                osc.connect(gain);
+                osc.connect(
+                    gain
+                );
+
 
                 gain.connect(
                     ctx.destination
                 );
 
 
-                osc.start(now);
-
-                osc.stop(
-                    now + 1.15
+                osc.start(
+                    now
                 );
 
 
-                /*
-                 * 高頻光點
-                 */
+                osc.stop(
+                    now + 1.1
+                );
+
 
                 const sparkle =
                     ctx.createOscillator();
+
 
                 const sparkleGain =
                     ctx.createGain();
@@ -157,32 +199,32 @@
 
 
                 sparkle.frequency.setValueAtTime(
-                    1050,
-                    now + 0.45
+                    1200,
+                    now + .25
                 );
 
 
                 sparkle.frequency.exponentialRampToValueAtTime(
-                    1500,
-                    now + 0.85
+                    1700,
+                    now + .75
                 );
 
 
                 sparkleGain.gain.setValueAtTime(
-                    0.0001,
+                    .0001,
                     now
                 );
 
 
                 sparkleGain.gain.exponentialRampToValueAtTime(
-                    0.035,
-                    now + 0.55
+                    .025,
+                    now + .4
                 );
 
 
                 sparkleGain.gain.exponentialRampToValueAtTime(
-                    0.0001,
-                    now + 1
+                    .0001,
+                    now + .95
                 );
 
 
@@ -190,30 +232,35 @@
                     sparkleGain
                 );
 
+
                 sparkleGain.connect(
                     ctx.destination
                 );
 
 
                 sparkle.start(
-                    now + 0.4
+                    now + .2
                 );
 
+
                 sparkle.stop(
-                    now + 1.05
+                    now + 1
                 );
 
             }
 
 
-            /*
-             * CLICK
-             */
+            /* =============================================
+               CLICK
+            ============================================= */
 
-            if (type === "click") {
+            if (
+                type === "click"
+            ) {
 
                 const osc =
                     ctx.createOscillator();
+
 
                 const gain =
                     ctx.createGain();
@@ -224,53 +271,62 @@
 
 
                 osc.frequency.setValueAtTime(
-                    650,
+                    620,
                     now
                 );
 
 
                 osc.frequency.exponentialRampToValueAtTime(
-                    390,
-                    now + 0.10
+                    350,
+                    now + .10
                 );
 
 
                 gain.gain.setValueAtTime(
-                    0.045,
+                    .035,
                     now
                 );
 
 
                 gain.gain.exponentialRampToValueAtTime(
-                    0.0001,
-                    now + 0.11
+                    .0001,
+                    now + .11
                 );
 
 
-                osc.connect(gain);
+                osc.connect(
+                    gain
+                );
+
 
                 gain.connect(
                     ctx.destination
                 );
 
 
-                osc.start(now);
+                osc.start(
+                    now
+                );
+
 
                 osc.stop(
-                    now + 0.12
+                    now + .12
                 );
 
             }
 
 
-            /*
-             * PAGE
-             */
+            /* =============================================
+               PAGE
+            ============================================= */
 
-            if (type === "page") {
+            if (
+                type === "page"
+            ) {
 
                 const osc =
                     ctx.createOscillator();
+
 
                 const gain =
                     ctx.createGain();
@@ -281,49 +337,52 @@
 
 
                 osc.frequency.setValueAtTime(
-                    240,
+                    260,
                     now
                 );
 
 
                 osc.frequency.exponentialRampToValueAtTime(
-                    510,
-                    now + 0.16
+                    560,
+                    now + .17
                 );
 
 
                 gain.gain.setValueAtTime(
-                    0.035,
+                    .035,
                     now
                 );
 
 
                 gain.gain.exponentialRampToValueAtTime(
-                    0.0001,
-                    now + 0.18
+                    .0001,
+                    now + .20
                 );
 
 
-                osc.connect(gain);
+                osc.connect(
+                    gain
+                );
+
 
                 gain.connect(
                     ctx.destination
                 );
 
 
-                osc.start(now);
-
-                osc.stop(
-                    now + 0.20
+                osc.start(
+                    now
                 );
 
 
-                /*
-                 * 小高頻
-                 */
+                osc.stop(
+                    now + .21
+                );
+
 
                 const high =
                     ctx.createOscillator();
+
 
                 const highGain =
                     ctx.createGain();
@@ -335,19 +394,19 @@
 
                 high.frequency.setValueAtTime(
                     900,
-                    now + 0.03
+                    now + .02
                 );
 
 
                 highGain.gain.setValueAtTime(
-                    0.025,
-                    now + 0.03
+                    .022,
+                    now + .02
                 );
 
 
                 highGain.gain.exponentialRampToValueAtTime(
-                    0.0001,
-                    now + 0.12
+                    .0001,
+                    now + .12
                 );
 
 
@@ -355,17 +414,19 @@
                     highGain
                 );
 
+
                 highGain.connect(
                     ctx.destination
                 );
 
 
                 high.start(
-                    now + 0.03
+                    now + .02
                 );
 
+
                 high.stop(
-                    now + 0.14
+                    now + .14
                 );
 
             }
@@ -373,7 +434,7 @@
         } catch (error) {
 
             console.warn(
-                "SFX unavailable",
+                "SFX error:",
                 error
             );
 
@@ -387,7 +448,7 @@
 
 
     /* =====================================================
-       MUSIC UI
+       UI UPDATE
     ===================================================== */
 
     function updateMusicUI() {
@@ -396,41 +457,638 @@
             return;
 
 
-        if (playing) {
+        musicButton.classList.toggle(
+            "playing",
+            playing
+        );
 
-            musicButton.textContent =
-                "Ⅱ";
 
-            musicButton.classList.add(
-                "playing"
-            );
+        musicButton.textContent =
+            playing
+                ? "Ⅱ"
+                : "♫";
 
-            if (musicLabel) {
+    }
 
-                musicLabel.textContent =
-                    "MUSIC ON";
+
+    /* =====================================================
+       PLAYLIST RENDER
+    ===================================================== */
+
+    function renderPlaylist() {
+
+        if (!playlistList)
+            return;
+
+
+        playlistList.innerHTML =
+            "";
+
+
+        if (
+            tracks.length === 0
+        ) {
+
+            playlistList.innerHTML =
+                `
+                <div style="
+                    padding:18px;
+                    text-align:center;
+                    color:#8ca0ab;
+                    font-size:10px;
+                    letter-spacing:1px;
+                ">
+                    NO TRACKS
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        tracks.forEach(
+            (track, index) => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "track";
+
+
+                if (
+                    index ===
+                    currentTrackIndex
+                ) {
+
+                    row.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                const name =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                name.className =
+                    "track-name";
+
+
+                name.textContent =
+                    `${index + 1}. ${track.name}`;
+
+
+                const remove =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                remove.className =
+                    "track-remove";
+
+
+                remove.textContent =
+                    "×";
+
+
+                row.appendChild(
+                    name
+                );
+
+
+                row.appendChild(
+                    remove
+                );
+
+
+                row.addEventListener(
+                    "click",
+                    event => {
+
+                        if (
+                            event.target ===
+                            remove
+                        )
+                            return;
+
+
+                        playTrack(
+                            index
+                        );
+
+                    }
+                );
+
+
+                remove.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+
+                        removeTrack(
+                            index
+                        );
+
+                    }
+                );
+
+
+                playlistList.appendChild(
+                    row
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       PLAY TRACK
+    ===================================================== */
+
+    function playTrack(index) {
+
+        if (
+            !tracks[index]
+        )
+            return;
+
+
+        currentTrackIndex =
+            index;
+
+
+        if (
+            !playerReady ||
+            !player
+        )
+            return;
+
+
+        player.loadVideoById(
+            tracks[index].id
+        );
+
+
+        player.setVolume(
+            35
+        );
+
+
+        playing =
+            true;
+
+
+        updateMusicUI();
+
+        renderPlaylist();
+
+    }
+
+
+    /* =====================================================
+       REMOVE TRACK
+    ===================================================== */
+
+    function removeTrack(index) {
+
+        if (
+            index < 0 ||
+            index >= tracks.length
+        )
+            return;
+
+
+        const wasPlaying =
+            index === currentTrackIndex;
+
+
+        tracks.splice(
+            index,
+            1
+        );
+
+
+        if (
+            tracks.length === 0
+        ) {
+
+            currentTrackIndex =
+                0;
+
+            playing =
+                false;
+
+
+            if (
+                player &&
+                player.stopVideo
+            ) {
+
+                player.stopVideo();
 
             }
 
-        } else {
 
-            musicButton.textContent =
-                "♫";
+            updateMusicUI();
 
-            musicButton.classList.remove(
-                "playing"
-            );
+            renderPlaylist();
 
-            if (musicLabel) {
+            return;
 
-                musicLabel.textContent =
-                    "MUSIC OFF";
+        }
+
+
+        if (
+            index <
+            currentTrackIndex
+        ) {
+
+            currentTrackIndex--;
+
+        }
+
+
+        if (
+            wasPlaying
+        ) {
+
+            if (
+                currentTrackIndex >=
+                tracks.length
+            ) {
+
+                currentTrackIndex =
+                    0;
 
             }
+
+
+            playTrack(
+                currentTrackIndex
+            );
+
+        }
+
+
+        renderPlaylist();
+
+    }
+
+
+    /* =====================================================
+       YOUTUBE ID
+    ===================================================== */
+
+    function extractYoutubeId(value) {
+
+        if (!value)
+            return null;
+
+
+        value =
+            value.trim();
+
+
+        /*
+         * 純 ID
+         */
+
+        if (
+            /^[a-zA-Z0-9_-]{11}$/
+                .test(value)
+        ) {
+
+            return value;
+
+        }
+
+
+        /*
+         * URL
+         */
+
+        try {
+
+            const url =
+                new URL(
+                    value
+                );
+
+
+            if (
+                url.hostname
+                    .includes("youtu.be")
+            ) {
+
+                const id =
+                    url.pathname
+                        .replace(
+                            "/",
+                            ""
+                        );
+
+
+                if (
+                    /^[a-zA-Z0-9_-]{11}$/
+                        .test(id)
+                ) {
+
+                    return id;
+
+                }
+
+            }
+
+
+            if (
+                url.hostname
+                    .includes("youtube.com")
+            ) {
+
+                const id =
+                    url.searchParams.get(
+                        "v"
+                    );
+
+
+                if (
+                    id &&
+                    /^[a-zA-Z0-9_-]{11}$/
+                        .test(id)
+                ) {
+
+                    return id;
+
+                }
+
+
+                const parts =
+                    url.pathname
+                        .split("/");
+
+
+                const possible =
+                    parts[
+                        parts.length - 1
+                    ];
+
+
+                if (
+                    /^[a-zA-Z0-9_-]{11}$/
+                        .test(possible)
+                ) {
+
+                    return possible;
+
+                }
+
+            }
+
+        } catch (error) {}
+
+
+
+        return null;
+
+    }
+
+
+    /* =====================================================
+       FETCH TITLE
+    ===================================================== */
+
+    async function fetchYoutubeTitle(id) {
+
+        try {
+
+            const response =
+                await fetch(
+                    `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`
+                );
+
+
+            if (
+                !response.ok
+            )
+                return null;
+
+
+            const data =
+                await response.json();
+
+
+            return data.title ||
+                null;
+
+        } catch (error) {
+
+            return null;
 
         }
 
     }
+
+
+    /* =====================================================
+       ADD
+    ===================================================== */
+
+    if (
+        youtubeAdd
+    ) {
+
+        youtubeAdd.addEventListener(
+            "click",
+            async () => {
+
+                const raw =
+                    youtubeInput
+                        .value
+                        .trim();
+
+
+                const id =
+                    extractYoutubeId(
+                        raw
+                    );
+
+
+                if (!id) {
+
+                    youtubeInput.value =
+                        "";
+
+
+                    youtubeInput.placeholder =
+                        "Invalid YouTube link";
+
+
+                    setTimeout(
+                        () => {
+
+                            youtubeInput.placeholder =
+                                "Paste YouTube link or ID...";
+
+                        },
+                        1800
+                    );
+
+
+                    return;
+
+                }
+
+
+                youtubeAdd.disabled =
+                    true;
+
+
+                youtubeAdd.textContent =
+                    "...";
+
+
+                const title =
+                    await fetchYoutubeTitle(
+                        id
+                    );
+
+
+                const trackName =
+                    title ||
+                    `Track [${id}]`;
+
+
+                tracks.push({
+
+                    name:
+                        trackName,
+
+                    id:
+                        id
+
+                });
+
+
+                youtubeInput.value =
+                    "";
+
+
+                currentTrackIndex =
+                    tracks.length - 1;
+
+
+                renderPlaylist();
+
+
+                youtubeAdd.disabled =
+                    false;
+
+
+                youtubeAdd.textContent =
+                    "ADD";
+
+
+                if (
+                    playerReady
+                ) {
+
+                    playTrack(
+                        currentTrackIndex
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       MUSIC BUTTON
+    ===================================================== */
+
+    if (
+        musicButton
+    ) {
+
+        musicButton.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+
+                getAudioContext();
+
+
+                playSfx(
+                    "click"
+                );
+
+
+                if (
+                    playlist.classList.contains(
+                        "open"
+                    )
+                ) {
+
+                    playlist.classList.remove(
+                        "open"
+                    );
+
+                } else {
+
+                    playlist.classList.add(
+                        "open"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       CLICK OUTSIDE PLAYLIST
+    ===================================================== */
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                !playlist.contains(
+                    event.target
+                ) &&
+                !musicButton.contains(
+                    event.target
+                )
+            ) {
+
+                playlist.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
 
 
     /* =====================================================
@@ -449,13 +1107,6 @@
             return;
 
         }
-
-
-        if (apiLoading)
-            return;
-
-
-        apiLoading = true;
 
 
         const script =
@@ -484,12 +1135,14 @@
 
 
     /* =====================================================
-       PLAYER
+       INIT PLAYER
     ===================================================== */
 
     function initPlayer() {
 
-        if (player)
+        if (
+            player
+        )
             return;
 
 
@@ -499,7 +1152,9 @@
                 {
 
                     videoId:
-                        MUSIC_ID,
+                        tracks.length
+                            ? tracks[0].id
+                            : "",
 
                     width:
                         1,
@@ -535,6 +1190,7 @@
 
                     },
 
+
                     events: {
 
                         onReady:
@@ -543,9 +1199,13 @@
                                 playerReady =
                                     true;
 
+
                                 player.setVolume(
                                     35
                                 );
+
+
+                                renderPlaylist();
 
                             },
 
@@ -582,17 +1242,30 @@
                                     YT.PlayerState.ENDED
                                 ) {
 
-                                    player.seekTo(
-                                        0,
-                                        true
-                                    );
+                                    if (
+                                        tracks.length === 0
+                                    )
+                                        return;
 
-                                    player.playVideo();
+
+                                    currentTrackIndex =
+                                        (
+                                            currentTrackIndex
+                                            + 1
+                                        )
+                                        % tracks.length;
+
+
+                                    playTrack(
+                                        currentTrackIndex
+                                    );
 
                                 }
 
 
                                 updateMusicUI();
+
+                                renderPlaylist();
 
                             }
 
@@ -605,19 +1278,17 @@
 
 
     /* =====================================================
-       PLAY MUSIC
+       START MUSIC
     ===================================================== */
 
     window.startMusic =
         function () {
 
-            if (!playerReady) {
-
-                loadYouTubeAPI();
-
+            if (
+                !playerReady ||
+                !player
+            )
                 return;
-
-            }
 
 
             getAudioContext();
@@ -641,740 +1312,12 @@
 
 
     /* =====================================================
-       STOP MUSIC
-    ===================================================== */
-
-    function stopMusic() {
-
-        if (
-            !playerReady ||
-            !player
-        )
-            return;
-
-
-        player.pauseVideo();
-
-
-        playing =
-            false;
-
-
-        updateMusicUI();
-
-    }
-
-
-    /* =====================================================
-       MUSIC BUTTON
-    ===================================================== */
-
-    if (musicButton) {
-
-        musicButton.addEventListener(
-            "click",
-            function (event) {
-
-                event.stopPropagation();
-
-
-                getAudioContext();
-
-
-                playSfx(
-                    "click"
-                );
-
-
-                if (playing) {
-
-                    stopMusic();
-
-                } else {
-
-                    window.startMusic();
-
-                }
-
-            }
-        );
-
-    }
-
-
-    /* =====================================================
-       BOOT OVERLAY
-    ===================================================== */
-
-    function createBootScreen() {
-
-        const style =
-            document.createElement(
-                "style"
-            );
-
-
-        style.textContent = `
-
-            #archive-boot {
-
-                position: fixed;
-
-                inset: 0;
-
-                z-index: 10000;
-
-                display: flex;
-
-                align-items: center;
-
-                justify-content: center;
-
-                background:
-
-                    radial-gradient(
-                        circle at center,
-                        #eafaff 0%,
-                        #ccefff 35%,
-                        #a7dff7 100%
-                    );
-
-                overflow: hidden;
-
-                transition:
-                    opacity 1s ease;
-
-            }
-
-
-            #archive-boot.hide {
-
-                opacity: 0;
-
-                pointer-events: none;
-
-            }
-
-
-            .boot-orbit {
-
-                position: absolute;
-
-                width: 190px;
-
-                height: 190px;
-
-                border:
-                    1px solid
-                    rgba(255,255,255,0.75);
-
-                border-radius: 50%;
-
-                box-shadow:
-                    0 0 30px
-                    rgba(89,201,247,0.25);
-
-                opacity: 0;
-
-            }
-
-
-            .boot-orbit.o1 {
-
-                animation:
-                    orbitIn 2s
-                    0.15s
-                    forwards,
-                    orbitSpin 12s
-                    2.15s
-                    linear infinite;
-
-            }
-
-
-            .boot-orbit.o2 {
-
-                width: 235px;
-                height: 235px;
-
-                border-style:
-                    dashed;
-
-                animation:
-                    orbitIn 2s
-                    0.30s
-                    forwards,
-                    orbitSpinReverse 18s
-                    2.3s
-                    linear infinite;
-
-            }
-
-
-            .boot-orbit.o3 {
-
-                width: 285px;
-                height: 285px;
-
-                border-color:
-                    rgba(255,255,255,0.35);
-
-                animation:
-                    orbitIn 2s
-                    0.45s
-                    forwards,
-                    orbitSpin 25s
-                    2.45s
-                    linear infinite;
-
-            }
-
-
-            @keyframes orbitIn {
-
-                0% {
-
-                    opacity: 0;
-
-                    transform:
-                        scale(0.3)
-                        rotate(0deg);
-
-                }
-
-                60% {
-
-                    opacity: 1;
-
-                }
-
-                100% {
-
-                    opacity: 0.7;
-
-                    transform:
-                        scale(1)
-                        rotate(120deg);
-
-                }
-
-            }
-
-
-            @keyframes orbitSpin {
-
-                to {
-
-                    transform:
-                        rotate(360deg);
-
-                }
-
-            }
-
-
-            @keyframes orbitSpinReverse {
-
-                to {
-
-                    transform:
-                        rotate(-360deg);
-
-                }
-
-            }
-
-
-            .boot-seed {
-
-                position: relative;
-
-                width: 72px;
-                height: 72px;
-
-                border-radius: 50%;
-
-                background:
-                    radial-gradient(
-                        circle at 35% 30%,
-                        #ffffff,
-                        #faffff 42%,
-                        #b8ecff 100%
-                    );
-
-                box-shadow:
-
-                    0 0 20px
-                    #ffffff,
-
-                    0 0 45px
-                    rgba(255,255,255,0.95),
-
-                    0 0 85px
-                    rgba(89,201,247,0.75),
-
-                    0 0 130px
-                    rgba(89,201,247,0.45);
-
-                transform:
-                    scale(0);
-
-                animation:
-                    seedAppear 1.1s
-                    0.2s
-                    cubic-bezier(.22,1,.36,1)
-                    forwards,
-
-                    seedPulse 3s
-                    1.3s
-                    ease-in-out infinite;
-
-                z-index: 4;
-
-            }
-
-
-            @keyframes seedAppear {
-
-                0% {
-
-                    transform:
-                        scale(0)
-                        rotate(-20deg);
-
-                }
-
-                70% {
-
-                    transform:
-                        scale(1.16)
-                        rotate(5deg);
-
-                }
-
-                100% {
-
-                    transform:
-                        scale(1)
-                        rotate(0);
-
-                }
-
-            }
-
-
-            @keyframes seedPulse {
-
-                0%,
-                100% {
-
-                    box-shadow:
-
-                        0 0 20px #fff,
-
-                        0 0 50px
-                        rgba(255,255,255,.8),
-
-                        0 0 90px
-                        rgba(89,201,247,.55);
-
-                }
-
-                50% {
-
-                    box-shadow:
-
-                        0 0 35px #fff,
-
-                        0 0 75px
-                        rgba(255,255,255,1),
-
-                        0 0 135px
-                        rgba(89,201,247,.85);
-
-                }
-
-            }
-
-
-            .boot-core {
-
-                position: absolute;
-
-                width: 19px;
-                height: 19px;
-
-                border-radius: 50%;
-
-                background:
-                    #ffffff;
-
-                box-shadow:
-                    0 0 20px
-                    white;
-
-                left: 50%;
-                top: 50%;
-
-                transform:
-                    translate(-50%,-50%);
-
-                animation:
-                    corePulse 1.8s
-                    ease-in-out infinite;
-
-            }
-
-
-            @keyframes corePulse {
-
-                0%,
-                100% {
-                    transform:
-                        translate(-50%,-50%)
-                        scale(.8);
-                }
-
-                50% {
-                    transform:
-                        translate(-50%,-50%)
-                        scale(1.15);
-                }
-
-            }
-
-
-            .boot-label {
-
-                position: absolute;
-
-                bottom: 20%;
-
-                color:
-                    rgba(50,111,139,0.72);
-
-                font-size: 10px;
-
-                font-weight: 700;
-
-                letter-spacing: 4px;
-
-                opacity: 0;
-
-                animation:
-                    labelIn 1.2s
-                    0.7s
-                    forwards;
-
-            }
-
-
-            @keyframes labelIn {
-
-                from {
-
-                    opacity: 0;
-
-                    transform:
-                        translateY(8px);
-
-                }
-
-                to {
-
-                    opacity: 1;
-
-                    transform:
-                        translateY(0);
-
-                }
-
-            }
-
-
-            .boot-flash {
-
-                position: absolute;
-
-                width: 20px;
-                height: 20px;
-
-                border-radius: 50%;
-
-                background: #ffffff;
-
-                box-shadow:
-                    0 0 100px
-                    50px #ffffff;
-
-                transform:
-                    scale(0);
-
-                pointer-events: none;
-
-            }
-
-
-            #archive-boot.complete .boot-seed {
-
-                animation:
-                    seedBurst
-                    .8s
-                    cubic-bezier(.22,1,.36,1)
-                    forwards;
-
-            }
-
-
-            @keyframes seedBurst {
-
-                0% {
-
-                    transform:
-                        scale(1);
-
-                }
-
-                45% {
-
-                    transform:
-                        scale(2.2);
-
-                }
-
-                100% {
-
-                    transform:
-                        scale(32);
-
-                }
-
-            }
-
-        `;
-
-
-        document.head.appendChild(
-            style
-        );
-
-
-        const boot =
-            document.createElement(
-                "div"
-            );
-
-
-        boot.id =
-            "archive-boot";
-
-
-        boot.innerHTML = `
-
-            <div class="boot-orbit o1"></div>
-
-            <div class="boot-orbit o2"></div>
-
-            <div class="boot-orbit o3"></div>
-
-
-            <div class="boot-seed">
-
-                <div
-                    class="boot-core"
-                ></div>
-
-            </div>
-
-
-            <div class="boot-label">
-                ARCHIVE INITIALIZING
-            </div>
-
-            <div class="boot-flash"></div>
-
-        `;
-
-
-        document.body.appendChild(
-            boot
-        );
-
-
-        return boot;
-
-    }
-
-
-    /* =====================================================
-       BOOT
-    ===================================================== */
-
-    function startBoot() {
-
-        if (bootStarted)
-            return;
-
-
-        bootStarted =
-            true;
-
-
-        const boot =
-            createBootScreen();
-
-
-        /*
-         * 等待一下讓 UI 進入
-         */
-
-        setTimeout(
-            () => {
-
-                playSfx(
-                    "boot"
-                );
-
-            },
-            350
-        );
-
-
-        /*
-         * 光之種爆發
-         */
-
-        setTimeout(
-            () => {
-
-                boot.classList.add(
-                    "complete"
-                );
-
-
-                /*
-                 * 同時啟動音樂
-                 */
-
-                if (
-                    playerReady
-                ) {
-
-                    window.startMusic();
-
-                }
-
-            },
-            2100
-        );
-
-
-        /*
-         * 主畫面出現
-         */
-
-        setTimeout(
-            () => {
-
-                document.body.classList.add(
-                    "booted"
-                );
-
-
-                boot.classList.add(
-                    "hide"
-                );
-
-
-            },
-            2550
-        );
-
-
-        /*
-         * 完全移除
-         */
-
-        setTimeout(
-            () => {
-
-                boot.remove();
-
-            },
-            3700
-        );
-
-    }
-
-
-    /* =====================================================
-       FIRST USER INTERACTION
-    ===================================================== */
-
-    let firstInteraction =
-        false;
-
-
-    function userInteraction() {
-
-        if (
-            firstInteraction
-        )
-            return;
-
-
-        firstInteraction =
-            true;
-
-
-        getAudioContext();
-
-
-        /*
-         * 直接啟動開機動畫
-         */
-
-        startBoot();
-
-
-        /*
-         * 有些瀏覽器這一瞬間可以
-         * 允許 YouTube 開始播放
-         */
-
-        if (playerReady) {
-
-            try {
-
-                window.startMusic();
-
-            } catch (e) {}
-
-        }
-
-
-        document.removeEventListener(
-            "pointerdown",
-            userInteraction
-        );
-
-    }
-
-
-    document.addEventListener(
-        "pointerdown",
-        userInteraction,
-        {
-            passive: true
-        }
-    );
-
-
-    /* =====================================================
        INIT
     ===================================================== */
 
     loadYouTubeAPI();
+
+    renderPlaylist();
 
 
 })();
