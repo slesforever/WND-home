@@ -4,28 +4,28 @@
 
 
     /* =========================================================
-       CONFIGURATION
+       CONFIG
     ========================================================= */
 
     const DEFAULT_VOLUME = 100;
 
     /*
-     * UI 可以調到 200%
+     * UI 可以到 200%
      *
-     * 但是 YouTube IFrame Player API 的 setVolume()
-     * 實際上限為 100。
+     * 注意：
+     * YouTube IFrame Player API 實際 setVolume() 上限為 100。
+     * 因此目前 101~200 是保留的 Boost 顯示區。
      *
-     * 0~100：
-     *     直接作用於 YouTube Player。
-     *
-     * 101~200：
-     *     保留給未來真正 Web Audio Boost 使用。
-     *
-     * 目前不會假裝 YouTube 可以超過 100。
+     * 之後若改成直接 MP3 + Web Audio，
+     * 才能真正做 100% 以上的增益。
      */
 
     const MAX_VOLUME = 200;
 
+
+    /*
+     * Fade 時間
+     */
 
     const FADE_OUT_TIME = 800;
 
@@ -33,6 +33,10 @@
 
     const FADE_STEP = 20;
 
+
+    /*
+     * localStorage
+     */
 
     const VOLUME_KEY =
         "wnd_music_volume";
@@ -61,30 +65,76 @@
 
 
     /* =========================================================
-       STATE
+       PLAYER STATE
     ========================================================= */
 
-    let player = null;
+    let player =
+        null;
 
-    let playerReady = false;
 
-    let currentTrackIndex = 0;
+    let playerReady =
+        false;
 
-    let isPlaying = false;
 
-    let isTransitioning = false;
+    let isPlaying =
+        false;
 
-    let youtubeApiLoading = false;
 
-    let fadeTimer = null;
+    let currentTrackIndex =
+        0;
 
-    let transitionId = 0;
 
-    let pendingAutoplay = false;
+    let expectedVideoId =
+        null;
+
+
+    /*
+     * 開機時可能還沒初始化 YouTube。
+     *
+     * 這個 flag 會記住玩家是否要求自動播放。
+     */
+
+    let startMusicRequested =
+        window.__WND_START_MUSIC_REQUESTED === true;
+
+
+    /*
+     * 是否正在切換歌曲
+     */
+
+    let isTransitioning =
+        false;
+
+
+    /*
+     * Fade timer
+     */
+
+    let fadeTimer =
+        null;
+
+
+    /*
+     * 每次切歌都增加。
+     *
+     * 舊操作完成時如果 ID 不同，
+     * 就不再繼續執行。
+     */
+
+    let operationId =
+        0;
+
+
+    /*
+     * YouTube API 是否正在載入
+     */
+
+    let youtubeApiLoading =
+        false;
 
 
     /* =========================================================
-       LOAD SAVED VOLUME
+       VOLUME
     ========================================================= */
 
     function loadVolume() {
@@ -125,7 +175,7 @@
         ) {
 
             console.warn(
-                "Unable to load saved volume:",
+                "Unable to load volume:",
                 error
             );
 
@@ -142,7 +192,7 @@
 
 
     /* =========================================================
-       LOAD SAVED MUTE
+       MUTE
     ========================================================= */
 
     function loadMuted() {
@@ -232,7 +282,8 @@
        AUDIO CONTEXT
     ========================================================= */
 
-    let audioContext = null;
+    let audioContext =
+        null;
 
 
     function getAudioContext() {
@@ -264,8 +315,11 @@
             "suspended"
         ) {
 
-            audioContext.resume()
-                .catch(() => {});
+            audioContext
+                .resume()
+                .catch(
+                    () => {}
+                );
 
         }
 
@@ -405,7 +459,7 @@
 
                 sparkleGain.gain.exponentialRampToValueAtTime(
                     0.025,
-                    now + 0.4
+                    now + 0.40
                 );
 
 
@@ -431,7 +485,7 @@
 
 
                 sparkle.stop(
-                    now + 1
+                    now + 1.0
                 );
 
 
@@ -468,7 +522,7 @@
 
                 osc.frequency.exponentialRampToValueAtTime(
                     360,
-                    now + 0.1
+                    now + 0.10
                 );
 
 
@@ -549,7 +603,7 @@
 
                 gain.gain.exponentialRampToValueAtTime(
                     0.0001,
-                    now + 0.2
+                    now + 0.20
                 );
 
 
@@ -592,7 +646,7 @@
 
 
                 highGain.gain.setValueAtTime(
-                    0.02,
+                    0.020,
                     now + 0.025
                 );
 
@@ -643,7 +697,7 @@
 
 
     /* =========================================================
-       EFFECTIVE VOLUME
+       EFFECTIVE YOUTUBE VOLUME
     ========================================================= */
 
     function getEffectiveVolume() {
@@ -658,7 +712,8 @@
 
 
         /*
-         * YouTube 真正上限 100
+         * YouTube IFrame API：
+         * 真正只支援 0~100。
          */
 
         return Math.max(
@@ -673,10 +728,12 @@
 
 
     /* =========================================================
-       APPLY VOLUME
+       SET PLAYER VOLUME
     ========================================================= */
 
-    function applyVolume() {
+    function setPlayerVolume(
+        value
+    ) {
 
         if (
             !playerReady ||
@@ -685,10 +742,20 @@
             return;
 
 
+        const safeValue =
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    Number(value) || 0
+                )
+            );
+
+
         try {
 
             player.setVolume(
-                getEffectiveVolume()
+                safeValue
             );
 
         } catch (
@@ -696,7 +763,7 @@
         ) {
 
             console.warn(
-                "Unable to apply volume:",
+                "setVolume failed:",
                 error
             );
 
@@ -706,7 +773,20 @@
 
 
     /* =========================================================
-       SAVE SETTINGS
+       APPLY USER VOLUME
+    ========================================================= */
+
+    function applyVolume() {
+
+        setPlayerVolume(
+            getEffectiveVolume()
+        );
+
+    }
+
+
+    /* =========================================================
+       SAVE VOLUME
     ========================================================= */
 
     function saveVolume() {
@@ -725,6 +805,10 @@
     }
 
 
+    /* =========================================================
+       SAVE MUTE
+    ========================================================= */
+
     function saveMuted() {
 
         try {
@@ -742,14 +826,19 @@
 
 
     /* =========================================================
-       CREATE VOLUME UI
+       VOLUME UI
     ========================================================= */
 
-    let volumeSlider = null;
+    let volumeSlider =
+        null;
 
-    let volumeValue = null;
 
-    let muteButton = null;
+    let volumeValue =
+        null;
+
+
+    let muteButton =
+        null;
 
 
     function createVolumeUI() {
@@ -761,7 +850,7 @@
 
 
         /*
-         * 避免重複建立
+         * 已經建立
          */
 
         if (
@@ -789,6 +878,7 @@
 
 
             updateVolumeUI();
+
 
             return;
 
@@ -872,6 +962,9 @@
                     height:
                         4px;
 
+                    margin:
+                        0;
+
                     appearance:
                         none;
 
@@ -919,7 +1012,7 @@
 
                     box-shadow:
                         0 0 9px
-                        rgba(99,210,250,.5);
+                        rgba(99,210,250,.50);
 
                 }
 
@@ -944,7 +1037,7 @@
 
                     box-shadow:
                         0 0 9px
-                        rgba(99,210,250,.5);
+                        rgba(99,210,250,.50);
 
                 }
 
@@ -952,16 +1045,16 @@
                 .wnd-volume-value {
 
                     width:
-                        47px;
+                        48px;
 
                     flex-shrink:
                         0;
 
-                    color:
-                        #5b8498;
-
                     text-align:
                         right;
+
+                    color:
+                        #5b8498;
 
                     font-size:
                         9px;
@@ -975,7 +1068,7 @@
                 .wnd-volume-value.boost {
 
                     color:
-                        #4c9dbd;
+                        #4b9fbd;
 
                 }
 
@@ -985,11 +1078,11 @@
                     display:
                         flex;
 
-                    align-items:
-                        center;
-
                     justify-content:
                         space-between;
+
+                    align-items:
+                        center;
 
                     margin-top:
                         8px;
@@ -1051,13 +1144,9 @@
             </style>
 
 
-            <div
-                class="wnd-volume-row"
-            >
+            <div class="wnd-volume-row">
 
-                <div
-                    class="wnd-volume-label"
-                >
+                <div class="wnd-volume-label">
                     VOLUME
                 </div>
 
@@ -1083,9 +1172,7 @@
             </div>
 
 
-            <div
-                class="wnd-volume-bottom"
-            >
+            <div class="wnd-volume-bottom">
 
                 <button
                     id="wnd-mute"
@@ -1096,9 +1183,7 @@
                 </button>
 
 
-                <div
-                    class="wnd-volume-note"
-                >
+                <div class="wnd-volume-note">
                     200% RANGE
                 </div>
 
@@ -1130,8 +1215,11 @@
             );
 
 
+        updateVolumeUI();
+
+
         /* =====================================================
-           SLIDER
+           VOLUME SLIDER
         ===================================================== */
 
         volumeSlider.addEventListener(
@@ -1143,6 +1231,11 @@
                         this.value
                     );
 
+
+                /*
+                 * 手動調整音量時，
+                 * 自動取消 mute。
+                 */
 
                 muted =
                     false;
@@ -1189,9 +1282,6 @@
             }
         );
 
-
-        updateVolumeUI();
-
     }
 
 
@@ -1210,7 +1300,9 @@
 
 
         volumeSlider.value =
-            String(volume);
+            String(
+                volume
+            );
 
 
         volumeValue.textContent =
@@ -1221,8 +1313,9 @@
 
         volumeValue.classList.toggle(
             "boost",
-            volume > 100 &&
-            !muted
+            volume >
+                100 &&
+                !muted
         );
 
 
@@ -1231,6 +1324,10 @@
                 ? "UNMUTE"
                 : "MUTE";
 
+
+        /*
+         * Slider 顯示
+         */
 
         const percentage =
             (
@@ -1262,7 +1359,7 @@
     function stopFade() {
 
         if (
-            fadeTimer
+            fadeTimer !== null
         ) {
 
             clearTimeout(
@@ -1283,7 +1380,6 @@
     ========================================================= */
 
     function fadeOut(
-        duration,
         callback
     ) {
 
@@ -1297,8 +1393,11 @@
 
             if (
                 callback
-            )
+            ) {
+
                 callback();
+
+            }
 
 
             return;
@@ -1306,7 +1405,8 @@
         }
 
 
-        let startVolume;
+        let startVolume =
+            0;
 
 
         try {
@@ -1329,8 +1429,22 @@
         if (
             !Number.isFinite(
                 startVolume
-            ) ||
-            startVolume <= 0
+            )
+        ) {
+
+            startVolume =
+                getEffectiveVolume();
+
+        }
+
+
+        /*
+         * 已經沒聲音
+         */
+
+        if (
+            startVolume <=
+            0
         ) {
 
             setPlayerVolume(
@@ -1340,8 +1454,11 @@
 
             if (
                 callback
-            )
+            ) {
+
                 callback();
+
+            }
 
 
             return;
@@ -1355,18 +1472,23 @@
 
         function step() {
 
+            const elapsed =
+                performance.now()
+                -
+                startTime;
+
+
             const progress =
                 Math.min(
                     1,
-                    (
-                        performance.now()
-                        -
-                        startTime
-                    )
-                    /
-                    duration
+                    elapsed /
+                    FADE_OUT_TIME
                 );
 
+
+            /*
+             * ease out
+             */
 
             const eased =
                 1 -
@@ -1377,7 +1499,7 @@
                 );
 
 
-            const current =
+            const nextVolume =
                 startVolume *
                 (
                     1 -
@@ -1386,12 +1508,13 @@
 
 
             setPlayerVolume(
-                current
+                nextVolume
             );
 
 
             if (
-                progress >= 1
+                progress >=
+                1
             ) {
 
                 setPlayerVolume(
@@ -1405,8 +1528,11 @@
 
                 if (
                     callback
-                )
+                ) {
+
                     callback();
+
+                }
 
 
                 return;
@@ -1432,9 +1558,7 @@
        FADE IN
     ========================================================= */
 
-    function fadeIn(
-        duration
-    ) {
+    function fadeIn() {
 
         stopFade();
 
@@ -1446,12 +1570,13 @@
             return;
 
 
-        const target =
+        const targetVolume =
             getEffectiveVolume();
 
 
         if (
-            target <= 0
+            targetVolume <=
+            0
         ) {
 
             setPlayerVolume(
@@ -1475,16 +1600,17 @@
 
         function step() {
 
+            const elapsed =
+                performance.now()
+                -
+                startTime;
+
+
             const progress =
                 Math.min(
                     1,
-                    (
-                        performance.now()
-                        -
-                        startTime
-                    )
-                    /
-                    duration
+                    elapsed /
+                    FADE_IN_TIME
                 );
 
 
@@ -1502,22 +1628,23 @@
                 );
 
 
-            const current =
-                target *
+            const nextVolume =
+                targetVolume *
                 eased;
 
 
             setPlayerVolume(
-                current
+                nextVolume
             );
 
 
             if (
-                progress >= 1
+                progress >=
+                1
             ) {
 
                 setPlayerVolume(
-                    target
+                    targetVolume
                 );
 
 
@@ -1545,44 +1672,6 @@
 
 
     /* =========================================================
-       SET PLAYER VOLUME
-    ========================================================= */
-
-    function setPlayerVolume(
-        value
-    ) {
-
-        if (
-            !playerReady ||
-            !player
-        )
-            return;
-
-
-        const safe =
-            Math.max(
-                0,
-                Math.min(
-                    100,
-                    Number(value) || 0
-                )
-            );
-
-
-        try {
-
-            player.setVolume(
-                safe
-            );
-
-        } catch (
-            error
-        ) {}
-
-    }
-
-
-    /* =========================================================
        CURRENT TRACK
     ========================================================= */
 
@@ -1599,7 +1688,7 @@
 
 
     /* =========================================================
-       UPDATE UI
+       UPDATE MUSIC UI
     ========================================================= */
 
     function updateMusicUI() {
@@ -1704,6 +1793,7 @@
 
             updateMusicUI();
 
+
             return;
 
         }
@@ -1776,12 +1866,12 @@
                     );
 
 
-                remove.className =
-                    "track-remove";
-
-
                 remove.type =
                     "button";
+
+
+                remove.className =
+                    "track-remove";
 
 
                 remove.textContent =
@@ -1804,7 +1894,7 @@
 
 
                 /*
-                 * 播放歌曲
+                 * 選歌
                  */
 
                 item.addEventListener(
@@ -1830,7 +1920,7 @@
 
 
                 /*
-                 * 刪除歌曲
+                 * 刪歌
                  */
 
                 remove.addEventListener(
@@ -1871,23 +1961,26 @@
     ========================================================= */
 
     function playTrack(
-        targetIndex
+        index
     ) {
 
         if (
-            targetIndex < 0 ||
-            targetIndex >= tracks.length
-        )
+            index < 0 ||
+            index >= tracks.length
+        ) {
+
             return;
+
+        }
 
 
         /*
-         * 如果已經就是目前歌曲，
-         * 不重新 load。
+         * 如果已經是目前播放歌曲，
+         * 不重新切歌。
          */
 
         if (
-            targetIndex ===
+            index ===
             currentTrackIndex &&
             isPlaying
         ) {
@@ -1897,8 +1990,9 @@
         }
 
 
-        switchToTrack(
-            targetIndex
+        switchTrack(
+            index,
+            true
         );
 
     }
@@ -1908,15 +2002,19 @@
        SWITCH TRACK
     ========================================================= */
 
-    function switchToTrack(
-        targetIndex
+    function switchTrack(
+        targetIndex,
+        autoplay = true
     ) {
 
         if (
             targetIndex < 0 ||
             targetIndex >= tracks.length
-        )
+        ) {
+
             return;
+
+        }
 
 
         if (
@@ -1925,16 +2023,13 @@
         ) {
 
             /*
-             * Player 還沒 ready。
-             * 直接記住目標。
+             * Player 還沒有 Ready。
+             *
+             * 只設定目標。
              */
 
             currentTrackIndex =
                 targetIndex;
-
-
-            pendingAutoplay =
-                true;
 
 
             expectedVideoId =
@@ -1943,20 +2038,37 @@
                 ].id;
 
 
+            pendingAutoplay =
+                autoplay;
+
+
+            startMusicRequested =
+                autoplay;
+
+
             renderPlaylist();
 
             updateMusicUI();
+
 
             return;
 
         }
 
 
-        const requestId =
-            ++transitionId;
+        /*
+         * 新 operation。
+         */
+
+        const myOperation =
+            ++operationId;
 
 
-        const oldWasPlaying =
+        /*
+         * 是否原本正在播放
+         */
+
+        const oldPlaying =
             isPlaying;
 
 
@@ -1964,80 +2076,121 @@
             true;
 
 
-        stopFade();
+        /*
+         * 如果原本有在播放，
+         * 先 fade out。
+         */
+
+        const loadTarget =
+            () => {
+
+                /*
+                 * 如果期間又有別的操作，
+                 * 這次作廢。
+                 */
+
+                if (
+                    myOperation !==
+                    operationId
+                ) {
+
+                    return;
+
+                }
 
 
-        function loadTarget() {
-
-            /*
-             * 如果期間又點了另一首，
-             * 取消這次操作。
-             */
-
-            if (
-                requestId !==
-                transitionId
-            ) {
-
-                return;
-
-            }
+                const target =
+                    tracks[
+                        targetIndex
+                    ];
 
 
-            currentTrackIndex =
-                targetIndex;
+                if (
+                    !target
+                ) {
+
+                    isTransitioning =
+                        false;
+
+                    return;
+
+                }
 
 
-            expectedVideoId =
-                tracks[
-                    targetIndex
-                ].id;
+                /*
+                 * 這裡才真正改 index。
+                 */
+
+                currentTrackIndex =
+                    targetIndex;
 
 
-            pendingAutoplay =
-                true;
+                expectedVideoId =
+                    target.id;
 
 
-            renderPlaylist();
-
-            updateMusicUI();
-
-
-            setPlayerVolume(
-                0
-            );
+                pendingAutoplay =
+                    autoplay;
 
 
-            try {
+                renderPlaylist();
 
-                player.loadVideoById(
-                    expectedVideoId
+                updateMusicUI();
+
+
+                /*
+                 * 先將播放器音量設 0。
+                 */
+
+                setPlayerVolume(
+                    0
                 );
 
-            } catch (
-                error
-            ) {
 
-                console.error(
-                    "Failed to load YouTube track:",
+                try {
+
+                    if (
+                        autoplay
+                    ) {
+
+                        player.loadVideoById(
+                            target.id
+                        );
+
+                    } else {
+
+                        player.cueVideoById(
+                            target.id
+                        );
+
+                        isTransitioning =
+                            false;
+
+                    }
+
+                } catch (
                     error
-                );
+                ) {
+
+                    console.error(
+                        "Unable to load YouTube track:",
+                        error
+                    );
 
 
-                isTransitioning =
-                    false;
+                    isTransitioning =
+                        false;
 
-            }
+                }
 
-        }
+            };
 
 
         if (
-            oldWasPlaying
+            oldPlaying
         ) {
 
             fadeOut(
-                FADE_OUT_TIME,
                 loadTarget
             );
 
@@ -2056,11 +2209,32 @@
 
     function togglePlayback() {
 
+        /*
+         * Player 尚未 Ready。
+         *
+         * 記住使用者要播放。
+         */
+
         if (
             !playerReady ||
             !player
-        )
+        ) {
+
+            startMusicRequested =
+                true;
+
+
+            pendingAutoplay =
+                true;
+
+
+            window.__WND_START_MUSIC_REQUESTED =
+                true;
+
+
             return;
+
+        }
 
 
         getAudioContext();
@@ -2087,8 +2261,7 @@
 
 
             fadeOut(
-                FADE_OUT_TIME,
-                function () {
+                () => {
 
                     try {
 
@@ -2108,23 +2281,25 @@
 
 
         /*
-         * Resume
+         * Play
          */
-
-        isTransitioning =
-            false;
-
 
         pendingAutoplay =
             true;
 
 
+        expectedVideoId =
+            getCurrentTrack()
+                ? getCurrentTrack().id
+                : null;
+
+
+        setPlayerVolume(
+            0
+        );
+
+
         try {
-
-            setPlayerVolume(
-                0
-            );
-
 
             player.playVideo();
 
@@ -2133,7 +2308,7 @@
         ) {
 
             console.warn(
-                "Unable to play:",
+                "Unable to resume playback:",
                 error
             );
 
@@ -2143,7 +2318,7 @@
 
 
     /* =========================================================
-       NEXT TRACK
+       NEXT
     ========================================================= */
 
     function nextTrack() {
@@ -2155,34 +2330,25 @@
             return;
 
 
-        let nextIndex;
+        const nextIndex =
+            (
+                currentTrackIndex +
+                1
+            )
+            %
+            tracks.length;
 
 
-        if (
-            currentTrackIndex >=
-            tracks.length - 1
-        ) {
-
-            nextIndex =
-                0;
-
-        } else {
-
-            nextIndex =
-                currentTrackIndex + 1;
-
-        }
-
-
-        switchToTrack(
-            nextIndex
+        switchTrack(
+            nextIndex,
+            true
         );
 
     }
 
 
     /* =========================================================
-       PREVIOUS TRACK
+       PREVIOUS
     ========================================================= */
 
     function previousTrack() {
@@ -2194,27 +2360,19 @@
             return;
 
 
-        let previousIndex;
+        const previousIndex =
+            (
+                currentTrackIndex -
+                1 +
+                tracks.length
+            )
+            %
+            tracks.length;
 
 
-        if (
-            currentTrackIndex <=
-            0
-        ) {
-
-            previousIndex =
-                tracks.length - 1;
-
-        } else {
-
-            previousIndex =
-                currentTrackIndex - 1;
-
-        }
-
-
-        switchToTrack(
-            previousIndex
+        switchTrack(
+            previousIndex,
+            true
         );
 
     }
@@ -2231,17 +2389,16 @@
         if (
             index < 0 ||
             index >= tracks.length
-        )
+        ) {
+
             return;
+
+        }
 
 
         const removingCurrent =
             index ===
             currentTrackIndex;
-
-
-        const removedTrack =
-            tracks[index];
 
 
         /*
@@ -2254,15 +2411,22 @@
             !removingCurrent
         ) {
 
-            tracks.splice(
-                index,
-                1
-            );
+            const removed =
+                tracks.splice(
+                    index,
+                    1
+                )[0];
+
+
+            if (
+                !removed
+            )
+                return;
 
 
             /*
-             * 如果刪除的歌曲在目前歌曲之前，
-             * currentTrackIndex 往前移。
+             * 被刪歌曲在目前歌曲之前：
+             * index 往前移。
              */
 
             if (
@@ -2276,71 +2440,128 @@
 
 
             /*
-             * 保證 index 不越界
+             * 保證合法。
              */
 
             if (
-                tracks.length > 0 &&
                 currentTrackIndex >=
                 tracks.length
             ) {
 
                 currentTrackIndex =
-                    tracks.length - 1;
+                    Math.max(
+                        0,
+                        tracks.length - 1
+                    );
 
             }
 
 
             /*
-             * 如果沒有歌
+             * =================================================
+             * 防禦檢查
+             *
+             * 如果 Player 實際上還在播放那首
+             * 被刪掉的歌曲，就修正。
+             * =================================================
              */
 
             if (
-                tracks.length ===
-                0
+                playerReady &&
+                player
             ) {
 
-                currentTrackIndex =
-                    0;
+                try {
+
+                    const data =
+                        player.getVideoData();
 
 
-                isPlaying =
-                    false;
+                    const actualId =
+                        data &&
+                        data.video_id
+                            ? data.video_id
+                            : null;
 
 
-                if (
-                    playerReady &&
-                    player
+                    const deletedWasPlaying =
+                        actualId ===
+                        removed.id;
+
+
+                    if (
+                        deletedWasPlaying
+                    ) {
+
+                        /*
+                         * 舊歌曲已不存在。
+                         *
+                         * 如果還有歌，
+                         * 換到目前合法歌曲。
+                         */
+
+                        if (
+                            tracks.length >
+                            0
+                        ) {
+
+                            switchTrack(
+                                Math.min(
+                                    currentTrackIndex,
+                                    tracks.length - 1
+                                ),
+                                true
+                            );
+
+                        } else {
+
+                            stopFade();
+
+
+                            try {
+
+                                player.stopVideo();
+
+                            } catch (
+                                error
+                            ) {}
+
+
+                            setPlayerVolume(
+                                0
+                            );
+
+
+                            isPlaying =
+                                false;
+
+
+                            updateMusicUI();
+
+                        }
+
+
+                        return;
+
+                    }
+
+                } catch (
+                    error
                 ) {
 
-                    stopFade();
-
-
-                    try {
-
-                        player.stopVideo();
-
-                    } catch (
+                    console.warn(
+                        "Removed-track verification failed:",
                         error
-                    ) {}
-
-
-                    setPlayerVolume(
-                        0
                     );
 
                 }
 
-
-                updateMusicUI();
-
-            } else {
-
-                renderPlaylist();
-
-                updateMusicUI();
-
             }
+
+
+            renderPlaylist();
+
+            updateMusicUI();
 
 
             return;
@@ -2350,11 +2571,11 @@
 
         /*
          * =====================================================
-         * 刪除目前正在播放的歌曲
+         * 刪除目前歌曲
          * =====================================================
          */
 
-        ++transitionId;
+        ++operationId;
 
 
         stopFade();
@@ -2365,15 +2586,12 @@
 
 
         /*
-         * 先淡出
+         * 如果目前正在播放，
+         * 先 Fade Out。
          */
 
-        const finishRemoval =
-            function () {
-
-                /*
-                 * 從 playlist 正式移除
-                 */
+        const performRemoval =
+            () => {
 
                 const removed =
                     tracks.splice(
@@ -2395,7 +2613,7 @@
 
 
                 /*
-                 * 沒有歌曲了
+                 * 沒有歌曲
                  */
 
                 if (
@@ -2412,6 +2630,14 @@
 
 
                     pendingAutoplay =
+                        false;
+
+
+                    startMusicRequested =
+                        false;
+
+
+                    window.__WND_START_MUSIC_REQUESTED =
                         false;
 
 
@@ -2455,15 +2681,11 @@
 
 
                 /*
-                 * 刪掉的是目前 index。
-                 *
-                 * 例如：
+                 * 選擇下一首
                  *
                  * A B C D
                  *   ↑
                  * 刪 B
-                 *
-                 * 最自然的是：
                  *
                  * A C D
                  *   ↑
@@ -2505,8 +2727,9 @@
 
 
                 /*
-                 * 沒有原本正在播放：
-                 * 只是切換選中的歌曲。
+                 * 原本沒有播放：
+                 *
+                 * 只換目前選取項目。
                  */
 
                 if (
@@ -2521,32 +2744,29 @@
                         false;
 
 
-                    if (
-                        playerReady &&
-                        player
-                    ) {
+                    pendingAutoplay =
+                        false;
 
-                        setPlayerVolume(
-                            0
+
+                    try {
+
+                        player.cueVideoById(
+                            expectedVideoId
                         );
 
-
-                        try {
-
-                            player.cueVideoById(
-                                expectedVideoId
-                            );
-
-                        } catch (
-                            error
-                        ) {}
-
-                    }
+                    } catch (
+                        error
+                    ) {}
 
 
-                    renderPlaylist();
+                    setPlayerVolume(
+                        0
+                    );
+
 
                     updateMusicUI();
+
+                    renderPlaylist();
 
 
                     return;
@@ -2555,8 +2775,9 @@
 
 
                 /*
-                 * 原本有在播放：
-                 * 載入新歌曲並自動播放。
+                 * 原本正在播放：
+                 *
+                 * 載入新歌曲。
                  */
 
                 isTransitioning =
@@ -2583,7 +2804,7 @@
                 ) {
 
                     console.error(
-                        "Failed to load replacement track:",
+                        "Replacement song failed:",
                         error
                     );
 
@@ -2603,13 +2824,12 @@
         ) {
 
             fadeOut(
-                FADE_OUT_TIME,
-                finishRemoval
+                performRemoval
             );
 
         } else {
 
-            finishRemoval();
+            performRemoval();
 
         }
 
@@ -2635,7 +2855,7 @@
 
 
         /*
-         * 純 ID
+         * 直接輸入 ID
          */
 
         if (
@@ -2658,16 +2878,19 @@
                 );
 
 
+            const hostname =
+                url.hostname
+                    .toLowerCase();
+
+
             /*
              * youtu.be
              */
 
             if (
-                url.hostname
-                    .toLowerCase()
-                    .includes(
-                        "youtu.be"
-                    )
+                hostname.includes(
+                    "youtu.be"
+                )
             ) {
 
                 const id =
@@ -2700,12 +2923,14 @@
              */
 
             if (
-                url.hostname
-                    .toLowerCase()
-                    .includes(
-                        "youtube.com"
-                    )
+                hostname.includes(
+                    "youtube.com"
+                )
             ) {
+
+                /*
+                 * ?v=
+                 */
 
                 const watchId =
                     url.searchParams.get(
@@ -2726,6 +2951,12 @@
                 }
 
 
+                /*
+                 * /shorts/ID
+                 * /embed/ID
+                 * /v/ID
+                 */
+
                 const parts =
                     url.pathname
                         .split(
@@ -2736,48 +2967,34 @@
                         );
 
 
-                /*
-                 * /shorts/ID
-                 */
-
                 if (
-                    parts[0] ===
-                    "shorts" &&
-                    parts[1]
+                    parts.length >= 2
                 ) {
 
+                    const type =
+                        parts[0];
+
+
+                    const id =
+                        parts[1];
+
+
                     if (
+                        (
+                            type ===
+                            "shorts" ||
+                            type ===
+                            "embed" ||
+                            type ===
+                            "v"
+                        ) &&
                         /^[a-zA-Z0-9_-]{11}$/
                             .test(
-                                parts[1]
+                                id
                             )
                     ) {
 
-                        return parts[1];
-
-                    }
-
-                }
-
-
-                /*
-                 * /embed/ID
-                 */
-
-                if (
-                    parts[0] ===
-                    "embed" &&
-                    parts[1]
-                ) {
-
-                    if (
-                        /^[a-zA-Z0-9_-]{11}$/
-                            .test(
-                                parts[1]
-                            )
-                    ) {
-
-                        return parts[1];
+                        return id;
 
                     }
 
@@ -2787,14 +3004,7 @@
 
         } catch (
             error
-        ) {
-
-            /*
-             * 不是 URL。
-             * 後面會自動回傳 null。
-             */
-
-        }
+        ) {}
 
 
         return null;
@@ -2845,7 +3055,7 @@
         ) {
 
             console.warn(
-                "Unable to fetch YouTube title:",
+                "YouTube title request failed:",
                 error
             );
 
@@ -2888,7 +3098,7 @@
 
 
                 /*
-                 * 無效 ID
+                 * Invalid
                  */
 
                 if (
@@ -2939,7 +3149,7 @@
 
 
                 /*
-                 * 取得歌曲名稱
+                 * 取得標題
                  */
 
                 const title =
@@ -2949,7 +3159,7 @@
 
 
                 /*
-                 * 加到陣列
+                 * 加入陣列
                  */
 
                 tracks.push({
@@ -2965,13 +3175,7 @@
 
 
                 /*
-                 * 新歌的 index
-                 *
-                 * 注意：
-                 * 這裡「不直接修改」
-                 * currentTrackIndex。
-                 *
-                 * 交給 switchToTrack。
+                 * 新歌 index
                  */
 
                 const newIndex =
@@ -2997,18 +3201,24 @@
 
 
                 /*
-                 * 先刷新 UI。
+                 * 先更新歌單，
+                 * 讓 UI 立刻看到新歌。
                  */
 
                 renderPlaylist();
 
 
                 /*
-                 * 然後真的切到新歌。
+                 * 最重要：
+                 *
+                 * 不直接改 currentTrackIndex。
+                 *
+                 * 統一交給 switchTrack。
                  */
 
-                switchToTrack(
-                    newIndex
+                switchTrack(
+                    newIndex,
+                    true
                 );
 
             }
@@ -3018,7 +3228,7 @@
 
 
     /* =========================================================
-       ENTER TO ADD
+       ENTER KEY
     ========================================================= */
 
     if (
@@ -3111,7 +3321,7 @@
 
 
     /* =========================================================
-       PREVIOUS BUTTON
+       PREVIOUS
     ========================================================= */
 
     if (
@@ -3134,7 +3344,7 @@
 
 
     /* =========================================================
-       NEXT BUTTON
+       NEXT
     ========================================================= */
 
     if (
@@ -3157,7 +3367,7 @@
 
 
     /* =========================================================
-       CLOSE MUSIC PANEL
+       CLOSE PANEL OUTSIDE
     ========================================================= */
 
     document.addEventListener(
@@ -3191,6 +3401,10 @@
 
     function loadYoutubeAPI() {
 
+        /*
+         * API 已經存在
+         */
+
         if (
             window.YT &&
             window.YT.Player
@@ -3202,6 +3416,10 @@
 
         }
 
+
+        /*
+         * 已經在載入
+         */
 
         if (
             youtubeApiLoading
@@ -3232,6 +3450,10 @@
         );
 
 
+        /*
+         * YouTube 完成載入
+         */
+
         window.onYouTubeIframeAPIReady =
             function () {
 
@@ -3243,7 +3465,7 @@
 
 
     /* =========================================================
-       INITIALIZE PLAYER
+       INIT YOUTUBE PLAYER
     ========================================================= */
 
     function initPlayer() {
@@ -3259,8 +3481,15 @@
                 "youtube-player",
                 {
 
+                    /*
+                     * 初始載入第一首。
+                     *
+                     * autoplay 關閉，
+                     * 是否播放由 startMusicRequested 決定。
+                     */
+
                     videoId:
-                        tracks.length
+                        tracks.length > 0
                             ? tracks[0].id
                             : "",
 
@@ -3328,14 +3557,28 @@
 
 
                                 /*
-                                 * 如果在 API Ready 前
-                                 * 已經指定了要播放的歌曲，
-                                 * 現在才開始。
+                                 * =================================================
+                                 * 核心：
+                                 *
+                                 * 如果玩家在 YouTube API Ready
+                                 * 前就已經按了 Enter，
+                                 * 這裡一定播放。
+                                 * =================================================
                                  */
 
                                 if (
+                                    startMusicRequested ||
+                                    window.__WND_START_MUSIC_REQUESTED === true ||
                                     pendingAutoplay
                                 ) {
+
+                                    startMusicRequested =
+                                        false;
+
+
+                                    window.__WND_START_MUSIC_REQUESTED =
+                                        false;
+
 
                                     pendingAutoplay =
                                         false;
@@ -3349,6 +3592,16 @@
                                         current
                                     ) {
 
+                                        currentTrackIndex =
+                                            Math.max(
+                                                0,
+                                                Math.min(
+                                                    currentTrackIndex,
+                                                    tracks.length - 1
+                                                )
+                                            );
+
+
                                         expectedVideoId =
                                             current.id;
 
@@ -3360,16 +3613,14 @@
 
                                         try {
 
-                                            player.loadVideoById(
-                                                current.id
-                                            );
+                                            player.playVideo();
 
                                         } catch (
                                             error
                                         ) {
 
                                             console.warn(
-                                                "Initial track load error:",
+                                                "Queued autoplay failed:",
                                                 error
                                             );
 
@@ -3411,7 +3662,8 @@
 
 
                                         if (
-                                            data
+                                            data &&
+                                            data.video_id
                                         ) {
 
                                             actualId =
@@ -3425,16 +3677,14 @@
 
 
                                     /*
-                                     * 如果 YouTube
-                                     * 播放的是已刪除的歌曲，
-                                     * 強制停止。
+                                     * 確認真正播放的歌曲
                                      */
 
                                     if (
                                         actualId
                                     ) {
 
-                                        const actualIndex =
+                                        const realIndex =
                                             tracks.findIndex(
                                                 track =>
                                                     track.id ===
@@ -3442,8 +3692,13 @@
                                             );
 
 
+                                        /*
+                                         * Player 播放的是
+                                         * playlist 中不存在的歌曲。
+                                         */
+
                                         if (
-                                            actualIndex ===
+                                            realIndex ===
                                             -1
                                         ) {
 
@@ -3466,7 +3721,9 @@
 
                                             updateMusicUI();
 
+
                                             renderPlaylist();
+
 
                                             return;
 
@@ -3474,11 +3731,15 @@
 
 
                                         /*
-                                         * 同步 index
+                                         * 同步。
                                          */
 
                                         currentTrackIndex =
-                                            actualIndex;
+                                            realIndex;
+
+
+                                        expectedVideoId =
+                                            actualId;
 
                                     }
 
@@ -3495,19 +3756,25 @@
                                         false;
 
 
-                                    updateMusicUI();
+                                    startMusicRequested =
+                                        false;
+
+
+                                    window.__WND_START_MUSIC_REQUESTED =
+                                        false;
+
 
                                     renderPlaylist();
+
+                                    updateMusicUI();
 
 
                                     /*
                                      * 真正開始播放後
-                                     * 才 Fade In。
+                                     * 進行 Fade In。
                                      */
 
-                                    fadeIn(
-                                        FADE_IN_TIME
-                                    );
+                                    fadeIn();
 
 
                                     return;
@@ -3515,9 +3782,9 @@
                                 }
 
 
-                                /* =================================
-                                   PAUSED
-                                ================================= */
+                                /*
+                                 * PAUSED
+                                 */
 
                                 if (
                                     event.data ===
@@ -3525,9 +3792,8 @@
                                 ) {
 
                                     /*
-                                     * 如果不是我們正在
-                                     * 做 transition，
-                                     * 才把它當正常 pause。
+                                     * 正在 transition 時，
+                                     * 不要把狀態誤判成一般 pause。
                                      */
 
                                     if (
@@ -3536,6 +3802,7 @@
 
                                         isPlaying =
                                             false;
+
 
                                         updateMusicUI();
 
@@ -3547,9 +3814,9 @@
                                 }
 
 
-                                /* =================================
-                                   BUFFERING
-                                ================================= */
+                                /*
+                                 * BUFFERING
+                                 */
 
                                 if (
                                     event.data ===
@@ -3558,14 +3825,15 @@
 
                                     updateMusicUI();
 
+
                                     return;
 
                                 }
 
 
-                                /* =================================
-                                   ENDED
-                                ================================= */
+                                /*
+                                 * ENDED
+                                 */
 
                                 if (
                                     event.data ===
@@ -3576,8 +3844,16 @@
                                         false;
 
 
+                                    isTransitioning =
+                                        false;
+
+
                                     updateMusicUI();
 
+
+                                    /*
+                                     * 自動下一首
+                                     */
 
                                     if (
                                         tracks.length >
@@ -3607,31 +3883,33 @@
     window.startMusic =
         function () {
 
-            getAudioContext();
+            /*
+             * 先記住意圖。
+             *
+             * 即使此刻 YouTube 還沒 Ready。
+             */
+
+            startMusicRequested =
+                true;
 
 
-            if (
-                tracks.length ===
-                0
-            ) {
+            pendingAutoplay =
+                true;
 
-                return;
 
-            }
+            window.__WND_START_MUSIC_REQUESTED =
+                true;
 
 
             /*
-             * API 尚未 ready。
+             * 還沒 Ready：
+             * 等 onReady。
              */
 
             if (
                 !playerReady ||
                 !player
             ) {
-
-                pendingAutoplay =
-                    true;
-
 
                 return;
 
@@ -3652,14 +3930,6 @@
                 current.id;
 
 
-            pendingAutoplay =
-                true;
-
-
-            isTransitioning =
-                false;
-
-
             setPlayerVolume(
                 0
             );
@@ -3674,7 +3944,7 @@
             ) {
 
                 console.warn(
-                    "startMusic error:",
+                    "startMusic failed:",
                     error
                 );
 
@@ -3687,12 +3957,24 @@
        INITIALIZE
     ========================================================= */
 
+    /*
+     * 在 API 尚未載入前先建立基本 UI。
+     */
+
     createVolumeUI();
+
 
     renderPlaylist();
 
+
     updateMusicUI();
 
+
+    /*
+     * 開始載入 YouTube
+     */
+
     loadYoutubeAPI();
+
 
 })();
