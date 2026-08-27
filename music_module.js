@@ -1,218 +1,335 @@
 (function () {
 
-    /* =====================================
-       Music
-       ===================================== */
+    const MUSIC_ID =
+        "eMqWJDP28p8";
 
-    const MUSIC_ID = "eMqWJDP28p8";
 
     let player = null;
-    let ready = false;
+
+    let playerReady = false;
+
     let playing = false;
 
-    const musicButton =
-        document.getElementById("music-button");
+    let apiLoading = false;
 
-    const musicStatus =
-        document.getElementById("music-status");
 
-    /* =====================================
-       狀態文字
-       ===================================== */
+    const button =
+        document.getElementById(
+            "music-button"
+        );
 
-    function showStatus(text) {
+    const label =
+        document.getElementById(
+            "music-label"
+        );
 
-        if (!musicStatus) return;
-
-        musicStatus.textContent = text;
-        musicStatus.classList.add("show");
-
-        clearTimeout(showStatus.timer);
-
-        showStatus.timer = setTimeout(() => {
-            musicStatus.classList.remove("show");
-        }, 1800);
-    }
 
     /* =====================================
        UI
-       ===================================== */
+    ===================================== */
 
-    function updateButton() {
+    function updateUI() {
 
-        if (!musicButton) return;
+        if (!button || !label)
+            return;
+
 
         if (playing) {
-            musicButton.textContent = "◼";
-            musicButton.classList.add("playing");
+
+            button.textContent = "Ⅱ";
+
+            button.classList.add(
+                "playing"
+            );
+
+            label.textContent =
+                "MUSIC ON";
+
         } else {
-            musicButton.textContent = "♫";
-            musicButton.classList.remove("playing");
+
+            button.textContent = "♫";
+
+            button.classList.remove(
+                "playing"
+            );
+
+            label.textContent =
+                "MUSIC OFF";
+
         }
 
     }
+
 
     /* =====================================
        YouTube API
-       ===================================== */
+    ===================================== */
 
-    function loadYouTubeAPI() {
+    function loadAPI() {
 
-        if (window.YT && window.YT.Player) {
+        if (
+            window.YT &&
+            window.YT.Player
+        ) {
+
             initPlayer();
+
             return;
+
         }
 
-        const existing =
-            document.querySelector(
-                'script[src="https://www.youtube.com/iframe_api"]'
+
+        if (apiLoading)
+            return;
+
+
+        apiLoading = true;
+
+
+        const script =
+            document.createElement(
+                "script"
             );
 
-        if (!existing) {
 
-            const script =
-                document.createElement("script");
+        script.src =
+            "https://www.youtube.com/iframe_api";
 
-            script.src =
-                "https://www.youtube.com/iframe_api";
 
-            document.head.appendChild(script);
-        }
+        document.head.appendChild(
+            script
+        );
+
 
         window.onYouTubeIframeAPIReady =
-            initPlayer;
+            function () {
+
+                initPlayer();
+
+            };
+
     }
 
+
     /* =====================================
-       Player
-       ===================================== */
+       PLAYER
+    ===================================== */
 
     function initPlayer() {
 
-        if (player) return;
+        if (player)
+            return;
 
-        player = new YT.Player(
-            "youtube-player",
-            {
-                height: "0",
-                width: "0",
 
-                videoId: MUSIC_ID,
+        player =
+            new YT.Player(
+                "youtube-player",
+                {
 
-                playerVars: {
-                    autoplay: 0,
-                    controls: 0,
-                    rel: 0,
-                    modestbranding: 1,
-                    playsinline: 1
-                },
+                    videoId:
+                        MUSIC_ID,
 
-                events: {
+                    width: 1,
 
-                    onReady: function () {
+                    height: 1,
 
-                        ready = true;
+                    playerVars: {
 
-                        player.setVolume(35);
+                        autoplay: 0,
+
+                        controls: 0,
+
+                        disablekb: 1,
+
+                        fs: 0,
+
+                        iv_load_policy: 3,
+
+                        modestbranding: 1,
+
+                        playsinline: 1,
+
+                        rel: 0
 
                     },
 
-                    onStateChange: function (event) {
 
-                        if (
-                            event.data ===
-                            YT.PlayerState.PLAYING
-                        ) {
+                    events: {
 
-                            playing = true;
+                        onReady:
+                            function () {
 
-                        }
+                                playerReady =
+                                    true;
 
-                        if (
-                            event.data ===
-                            YT.PlayerState.PAUSED
-                        ) {
+                                player.setVolume(
+                                    35
+                                );
 
-                            playing = false;
+                                updateUI();
 
-                        }
+                            },
 
-                        if (
-                            event.data ===
-                            YT.PlayerState.ENDED
-                        ) {
 
-                            player.seekTo(0);
-                            player.playVideo();
+                        onStateChange:
+                            function (
+                                event
+                            ) {
 
-                        }
+                                if (
+                                    event.data ===
+                                    YT.PlayerState.PLAYING
+                                ) {
 
-                        updateButton();
+                                    playing =
+                                        true;
+
+                                }
+
+
+                                if (
+                                    event.data ===
+                                    YT.PlayerState.PAUSED
+                                ) {
+
+                                    playing =
+                                        false;
+
+                                }
+
+
+                                if (
+                                    event.data ===
+                                    YT.PlayerState.ENDED
+                                ) {
+
+                                    player.seekTo(
+                                        0,
+                                        true
+                                    );
+
+                                    player.playVideo();
+
+                                }
+
+
+                                updateUI();
+
+                            }
+
                     }
 
                 }
+            );
+
+    }
+
+
+    /* =====================================
+       PLAY
+    ===================================== */
+
+    window.startMusic =
+        function () {
+
+            if (
+                !playerReady ||
+                !player
+            ) {
+
+                loadAPI();
+
+                return;
 
             }
-        );
-    }
+
+
+            player.setVolume(35);
+
+            player.playVideo();
+
+            playing = true;
+
+            updateUI();
+
+        };
+
 
     /* =====================================
-       播放
-       ===================================== */
+       PAUSE
+    ===================================== */
 
-    function playMusic() {
+    function stopMusic() {
 
-        if (!ready || !player) {
-            showStatus("MUSIC LOADING...");
+        if (
+            !playerReady ||
+            !player
+        )
             return;
-        }
 
-        player.setVolume(35);
-
-        player.playVideo();
-
-        playing = true;
-
-        updateButton();
-
-        showStatus("MUSIC ON");
-    }
-
-    /* =====================================
-       暫停
-       ===================================== */
-
-    function pauseMusic() {
-
-        if (!ready || !player) {
-            return;
-        }
 
         player.pauseVideo();
 
         playing = false;
 
-        updateButton();
+        updateUI();
 
-        showStatus("MUSIC OFF");
     }
 
+
     /* =====================================
-       按鈕
-       ===================================== */
+       BUTTON
+    ===================================== */
 
-    if (musicButton) {
+    if (button) {
 
-        musicButton.addEventListener(
+        button.addEventListener(
             "click",
             function (event) {
 
                 event.stopPropagation();
 
+
+                if (!playerReady) {
+
+                    loadAPI();
+
+                    setTimeout(
+                        () => {
+
+                            if (
+                                playerReady
+                            ) {
+
+                                player.setVolume(
+                                    35
+                                );
+
+                                player.playVideo();
+
+                                playing = true;
+
+                                updateUI();
+
+                            }
+
+                        },
+                        800
+                    );
+
+                    return;
+
+                }
+
+
                 if (playing) {
-                    pauseMusic();
+
+                    stopMusic();
+
                 } else {
-                    playMusic();
+
+                    startMusic();
+
                 }
 
             }
@@ -220,62 +337,48 @@
 
     }
 
+
     /* =====================================
-       第一次操作網頁時播放
+       第一次點擊頁面
        ===================================== */
 
-    let firstInteraction = true;
+    let firstInteraction =
+        true;
 
-    function startMusicOnInteraction() {
 
-        if (!firstInteraction) {
+    function firstClick() {
+
+        if (!firstInteraction)
             return;
-        }
+
 
         firstInteraction = false;
 
-        if (ready) {
-            playMusic();
-        }
+
+        startMusic();
+
 
         document.removeEventListener(
             "pointerdown",
-            startMusicOnInteraction
+            firstClick
         );
 
     }
 
+
     document.addEventListener(
         "pointerdown",
-        startMusicOnInteraction,
-        { passive: true }
+        firstClick,
+        {
+            passive: true
+        }
     );
 
-    /* =====================================
-       Hidden YouTube Player
-       ===================================== */
-
-    const playerContainer =
-        document.createElement("div");
-
-    playerContainer.id =
-        "youtube-player";
-
-    playerContainer.style.position = "fixed";
-    playerContainer.style.width = "1px";
-    playerContainer.style.height = "1px";
-    playerContainer.style.left = "-9999px";
-    playerContainer.style.top = "-9999px";
-    playerContainer.style.pointerEvents = "none";
-
-    document.body.appendChild(
-        playerContainer
-    );
 
     /* =====================================
-       啟動 API
-       ===================================== */
+       LOAD
+    ===================================== */
 
-    loadYouTubeAPI();
+    loadAPI();
 
 })();
