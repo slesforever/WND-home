@@ -1,8 +1,8 @@
 (function () {
 
-    /* =====================================================
-       DEFAULT TRACK
-    ===================================================== */
+    /* =========================================================
+       DEFAULT PLAYLIST
+    ========================================================= */
 
     const tracks = [
 
@@ -18,18 +18,29 @@
     ];
 
 
-    let player = null;
-
-    let playerReady = false;
-
-    let currentTrackIndex = 0;
-
-    let playing = false;
+    let player =
+        null;
 
 
-    /* =====================================================
+    let playerReady =
+        false;
+
+
+    let currentTrackIndex =
+        0;
+
+
+    let playing =
+        false;
+
+
+    let apiLoading =
+        false;
+
+
+    /* =========================================================
        DOM
-    ===================================================== */
+    ========================================================= */
 
     const musicButton =
         document.getElementById(
@@ -37,15 +48,21 @@
         );
 
 
-    const playlist =
+    const musicPanel =
         document.getElementById(
-            "playlist"
+            "music-panel"
         );
 
 
-    const playlistList =
+    const musicList =
         document.getElementById(
-            "playlist-list"
+            "music-list"
+        );
+
+
+    const currentTrack =
+        document.getElementById(
+            "current-track"
         );
 
 
@@ -61,16 +78,19 @@
         );
 
 
-    /* =====================================================
+    /* =========================================================
        AUDIO CONTEXT
-    ===================================================== */
+    ========================================================= */
 
-    let audioContext = null;
+    let audioContext =
+        null;
 
 
     function getAudioContext() {
 
-        if (!audioContext) {
+        if (
+            !audioContext
+        ) {
 
             audioContext =
                 new (
@@ -100,11 +120,13 @@
         getAudioContext;
 
 
-    /* =====================================================
+    /* =========================================================
        SFX
-    ===================================================== */
+    ========================================================= */
 
-    function playSfx(type) {
+    function playInterfaceSfx(
+        type
+    ) {
 
         try {
 
@@ -116,9 +138,9 @@
                 ctx.currentTime;
 
 
-            /* =============================================
+            /* =================================================
                BOOT
-            ============================================= */
+            ================================================= */
 
             if (
                 type === "boot"
@@ -137,14 +159,14 @@
 
 
                 osc.frequency.setValueAtTime(
-                    220,
+                    180,
                     now
                 );
 
 
                 osc.frequency.exponentialRampToValueAtTime(
-                    780,
-                    now + .75
+                    760,
+                    now + .72
                 );
 
 
@@ -155,14 +177,14 @@
 
 
                 gain.gain.exponentialRampToValueAtTime(
-                    .05,
+                    .055,
                     now + .18
                 );
 
 
                 gain.gain.exponentialRampToValueAtTime(
                     .0001,
-                    now + 1.05
+                    now + 1.08
                 );
 
 
@@ -186,6 +208,10 @@
                 );
 
 
+                /*
+                 * Sparkle
+                 */
+
                 const sparkle =
                     ctx.createOscillator();
 
@@ -205,8 +231,8 @@
 
 
                 sparkle.frequency.exponentialRampToValueAtTime(
-                    1700,
-                    now + .75
+                    1750,
+                    now + .78
                 );
 
 
@@ -217,7 +243,7 @@
 
 
                 sparkleGain.gain.exponentialRampToValueAtTime(
-                    .025,
+                    .026,
                     now + .4
                 );
 
@@ -239,7 +265,7 @@
 
 
                 sparkle.start(
-                    now + .2
+                    now + .18
                 );
 
 
@@ -250,9 +276,9 @@
             }
 
 
-            /* =============================================
+            /* =================================================
                CLICK
-            ============================================= */
+            ================================================= */
 
             if (
                 type === "click"
@@ -271,19 +297,19 @@
 
 
                 osc.frequency.setValueAtTime(
-                    620,
+                    640,
                     now
                 );
 
 
                 osc.frequency.exponentialRampToValueAtTime(
-                    350,
+                    360,
                     now + .10
                 );
 
 
                 gain.gain.setValueAtTime(
-                    .035,
+                    .034,
                     now
                 );
 
@@ -316,9 +342,9 @@
             }
 
 
-            /* =============================================
+            /* =================================================
                PAGE
-            ============================================= */
+            ================================================= */
 
             if (
                 type === "page"
@@ -337,19 +363,19 @@
 
 
                 osc.frequency.setValueAtTime(
-                    260,
+                    250,
                     now
                 );
 
 
                 osc.frequency.exponentialRampToValueAtTime(
-                    560,
+                    540,
                     now + .17
                 );
 
 
                 gain.gain.setValueAtTime(
-                    .035,
+                    .037,
                     now
                 );
 
@@ -380,6 +406,10 @@
                 );
 
 
+                /*
+                 * High ping
+                 */
+
                 const high =
                     ctx.createOscillator();
 
@@ -393,20 +423,20 @@
 
 
                 high.frequency.setValueAtTime(
-                    900,
-                    now + .02
+                    920,
+                    now + .025
                 );
 
 
                 highGain.gain.setValueAtTime(
-                    .022,
-                    now + .02
+                    .020,
+                    now + .025
                 );
 
 
                 highGain.gain.exponentialRampToValueAtTime(
                     .0001,
-                    now + .12
+                    now + .125
                 );
 
 
@@ -421,7 +451,7 @@
 
 
                 high.start(
-                    now + .02
+                    now + .025
                 );
 
 
@@ -431,10 +461,12 @@
 
             }
 
-        } catch (error) {
+        } catch (
+            error
+        ) {
 
             console.warn(
-                "SFX error:",
+                "Interface SFX error:",
                 error
             );
 
@@ -444,44 +476,82 @@
 
 
     window.playInterfaceSfx =
-        playSfx;
+        playInterfaceSfx;
 
 
-    /* =====================================================
-       UI UPDATE
-    ===================================================== */
+    /* =========================================================
+       MUSIC UI
+    ========================================================= */
 
     function updateMusicUI() {
 
-        if (!musicButton)
+        if (
+            !musicButton
+        )
             return;
 
 
-        musicButton.classList.toggle(
-            "playing",
+        if (
             playing
-        );
+        ) {
+
+            musicButton.textContent =
+                "Ⅱ";
 
 
-        musicButton.textContent =
-            playing
-                ? "Ⅱ"
-                : "♫";
+            musicButton.classList.add(
+                "playing"
+            );
+
+        } else {
+
+            musicButton.textContent =
+                "♫";
+
+
+            musicButton.classList.remove(
+                "playing"
+            );
+
+        }
+
+
+        if (
+            currentTrack
+        ) {
+
+            if (
+                tracks[currentTrackIndex]
+            ) {
+
+                currentTrack.textContent =
+                    tracks[currentTrackIndex].name;
+
+            } else {
+
+                currentTrack.textContent =
+                    "—";
+
+            }
+
+        }
 
     }
 
 
-    /* =====================================================
-       PLAYLIST RENDER
-    ===================================================== */
+    /* =========================================================
+       RENDER PLAYLIST
+    ========================================================= */
 
     function renderPlaylist() {
 
-        if (!playlistList)
+        if (
+            !musicList
+        )
             return;
 
 
-        playlistList.innerHTML =
+        musicList.innerHTML =
             "";
 
 
@@ -489,18 +559,23 @@
             tracks.length === 0
         ) {
 
-            playlistList.innerHTML =
-                `
-                <div style="
-                    padding:18px;
-                    text-align:center;
-                    color:#8ca0ab;
-                    font-size:10px;
-                    letter-spacing:1px;
-                ">
+            musicList.innerHTML = `
+
+                <div
+                    style="
+                        padding:20px;
+                        text-align:center;
+                        color:#8ba0ad;
+                        font-size:10px;
+                        letter-spacing:1px;
+                    "
+                >
                     NO TRACKS
                 </div>
-                `;
+
+            `;
+
+            updateMusicUI();
 
             return;
 
@@ -508,7 +583,10 @@
 
 
         tracks.forEach(
-            (track, index) => {
+            (
+                track,
+                index
+            ) => {
 
                 const row =
                     document.createElement(
@@ -532,6 +610,35 @@
                 }
 
 
+                const number =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                number.className =
+                    "track-number";
+
+
+                number.textContent =
+                    String(
+                        index + 1
+                    ).padStart(
+                        2,
+                        "0"
+                    );
+
+
+                const main =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                main.className =
+                    "track-main";
+
+
                 const name =
                     document.createElement(
                         "div"
@@ -543,7 +650,12 @@
 
 
                 name.textContent =
-                    `${index + 1}. ${track.name}`;
+                    track.name;
+
+
+                main.appendChild(
+                    name
+                );
 
 
                 const remove =
@@ -561,7 +673,12 @@
 
 
                 row.appendChild(
-                    name
+                    number
+                );
+
+
+                row.appendChild(
+                    main
                 );
 
 
@@ -604,21 +721,26 @@
                 );
 
 
-                playlistList.appendChild(
+                musicList.appendChild(
                     row
                 );
 
             }
         );
 
+
+        updateMusicUI();
+
     }
 
 
-    /* =====================================================
+    /* =========================================================
        PLAY TRACK
-    ===================================================== */
+    ========================================================= */
 
-    function playTrack(index) {
+    function playTrack(
+        index
+    ) {
 
         if (
             !tracks[index]
@@ -633,36 +755,55 @@
         if (
             !playerReady ||
             !player
-        )
+        ) {
+
             return;
 
-
-        player.loadVideoById(
-            tracks[index].id
-        );
+        }
 
 
-        player.setVolume(
-            35
-        );
+        try {
+
+            player.loadVideoById(
+                tracks[index].id
+            );
 
 
-        playing =
-            true;
+            player.setVolume(
+                35
+            );
 
 
-        updateMusicUI();
+            playing =
+                true;
 
-        renderPlaylist();
+
+            updateMusicUI();
+
+            renderPlaylist();
+
+
+        } catch (
+            error
+        ) {
+
+            console.warn(
+                "Playback error:",
+                error
+            );
+
+        }
 
     }
 
 
-    /* =====================================================
+    /* =========================================================
        REMOVE TRACK
-    ===================================================== */
+    ========================================================= */
 
-    function removeTrack(index) {
+    function removeTrack(
+        index
+    ) {
 
         if (
             index < 0 ||
@@ -671,8 +812,9 @@
             return;
 
 
-        const wasPlaying =
-            index === currentTrackIndex;
+        const wasCurrent =
+            index ===
+            currentTrackIndex;
 
 
         tracks.splice(
@@ -688,6 +830,7 @@
             currentTrackIndex =
                 0;
 
+
             playing =
                 false;
 
@@ -701,8 +844,6 @@
 
             }
 
-
-            updateMusicUI();
 
             renderPlaylist();
 
@@ -722,7 +863,7 @@
 
 
         if (
-            wasPlaying
+            wasCurrent
         ) {
 
             if (
@@ -748,13 +889,17 @@
     }
 
 
-    /* =====================================================
-       YOUTUBE ID
-    ===================================================== */
+    /* =========================================================
+       YOUTUBE ID EXTRACTION
+    ========================================================= */
 
-    function extractYoutubeId(value) {
+    function extractYoutubeId(
+        value
+    ) {
 
-        if (!value)
+        if (
+            !value
+        )
             return null;
 
 
@@ -763,12 +908,14 @@
 
 
         /*
-         * 純 ID
+         * 純 YouTube ID
          */
 
         if (
             /^[a-zA-Z0-9_-]{11}$/
-                .test(value)
+                .test(
+                    value
+                )
         ) {
 
             return value;
@@ -788,9 +935,15 @@
                 );
 
 
+            /*
+             * youtu.be
+             */
+
             if (
                 url.hostname
-                    .includes("youtu.be")
+                    .includes(
+                        "youtu.be"
+                    )
             ) {
 
                 const id =
@@ -803,7 +956,9 @@
 
                 if (
                     /^[a-zA-Z0-9_-]{11}$/
-                        .test(id)
+                        .test(
+                            id
+                        )
                 ) {
 
                     return id;
@@ -813,34 +968,44 @@
             }
 
 
+            /*
+             * youtube.com
+             */
+
             if (
                 url.hostname
-                    .includes("youtube.com")
+                    .includes(
+                        "youtube.com"
+                    )
             ) {
 
-                const id =
+                const watchId =
                     url.searchParams.get(
                         "v"
                     );
 
 
                 if (
-                    id &&
+                    watchId &&
                     /^[a-zA-Z0-9_-]{11}$/
-                        .test(id)
+                        .test(
+                            watchId
+                        )
                 ) {
 
-                    return id;
+                    return watchId;
 
                 }
 
 
                 const parts =
                     url.pathname
-                        .split("/");
+                        .split(
+                            "/"
+                        );
 
 
-                const possible =
+                const last =
                     parts[
                         parts.length - 1
                     ];
@@ -848,17 +1013,20 @@
 
                 if (
                     /^[a-zA-Z0-9_-]{11}$/
-                        .test(possible)
+                        .test(
+                            last
+                        )
                 ) {
 
-                    return possible;
+                    return last;
 
                 }
 
             }
 
-        } catch (error) {}
-
+        } catch (
+            error
+        ) {}
 
 
         return null;
@@ -866,11 +1034,13 @@
     }
 
 
-    /* =====================================================
+    /* =========================================================
        FETCH TITLE
-    ===================================================== */
+    ========================================================= */
 
-    async function fetchYoutubeTitle(id) {
+    async function fetchYoutubeTitle(
+        id
+    ) {
 
         try {
 
@@ -882,18 +1052,27 @@
 
             if (
                 !response.ok
-            )
+            ) {
+
                 return null;
+
+            }
 
 
             const data =
                 await response.json();
 
 
-            return data.title ||
-                null;
+            return (
+                data &&
+                data.title
+            )
+                ? data.title
+                : null;
 
-        } catch (error) {
+        } catch (
+            error
+        ) {
 
             return null;
 
@@ -902,9 +1081,9 @@
     }
 
 
-    /* =====================================================
-       ADD
-    ===================================================== */
+    /* =========================================================
+       ADD TRACK
+    ========================================================= */
 
     if (
         youtubeAdd
@@ -926,7 +1105,9 @@
                     );
 
 
-                if (!id) {
+                if (
+                    !id
+                ) {
 
                     youtubeInput.value =
                         "";
@@ -982,15 +1163,12 @@
                 });
 
 
-                youtubeInput.value =
-                    "";
-
-
                 currentTrackIndex =
                     tracks.length - 1;
 
 
-                renderPlaylist();
+                youtubeInput.value =
+                    "";
 
 
                 youtubeAdd.disabled =
@@ -999,6 +1177,9 @@
 
                 youtubeAdd.textContent =
                     "ADD";
+
+
+                renderPlaylist();
 
 
                 if (
@@ -1017,9 +1198,9 @@
     }
 
 
-    /* =====================================================
+    /* =========================================================
        MUSIC BUTTON
-    ===================================================== */
+    ========================================================= */
 
     if (
         musicButton
@@ -1035,28 +1216,14 @@
                 getAudioContext();
 
 
-                playSfx(
+                playInterfaceSfx(
                     "click"
                 );
 
 
-                if (
-                    playlist.classList.contains(
-                        "open"
-                    )
-                ) {
-
-                    playlist.classList.remove(
-                        "open"
-                    );
-
-                } else {
-
-                    playlist.classList.add(
-                        "open"
-                    );
-
-                }
+                musicPanel.classList.toggle(
+                    "open"
+                );
 
             }
         );
@@ -1064,16 +1231,16 @@
     }
 
 
-    /* =====================================================
-       CLICK OUTSIDE PLAYLIST
-    ===================================================== */
+    /* =========================================================
+       CLOSE MUSIC PANEL
+    ========================================================= */
 
     document.addEventListener(
         "click",
         event => {
 
             if (
-                !playlist.contains(
+                !musicPanel.contains(
                     event.target
                 ) &&
                 !musicButton.contains(
@@ -1081,7 +1248,7 @@
                 )
             ) {
 
-                playlist.classList.remove(
+                musicPanel.classList.remove(
                     "open"
                 );
 
@@ -1091,9 +1258,9 @@
     );
 
 
-    /* =====================================================
+    /* =========================================================
        YOUTUBE API
-    ===================================================== */
+    ========================================================= */
 
     function loadYouTubeAPI() {
 
@@ -1107,6 +1274,16 @@
             return;
 
         }
+
+
+        if (
+            apiLoading
+        )
+            return;
+
+
+        apiLoading =
+            true;
 
 
         const script =
@@ -1134,9 +1311,9 @@
     }
 
 
-    /* =====================================================
-       INIT PLAYER
-    ===================================================== */
+    /* =========================================================
+       PLAYER INIT
+    ========================================================= */
 
     function initPlayer() {
 
@@ -1156,11 +1333,14 @@
                             ? tracks[0].id
                             : "",
 
+
                     width:
                         1,
 
+
                     height:
                         1,
+
 
                     playerVars: {
 
@@ -1243,17 +1423,19 @@
                                 ) {
 
                                     if (
-                                        tracks.length === 0
+                                        tracks.length ===
+                                        0
                                     )
                                         return;
 
 
                                     currentTrackIndex =
                                         (
-                                            currentTrackIndex
-                                            + 1
+                                            currentTrackIndex +
+                                            1
                                         )
-                                        % tracks.length;
+                                        %
+                                        tracks.length;
 
 
                                     playTrack(
@@ -1277,9 +1459,9 @@
     }
 
 
-    /* =====================================================
+    /* =========================================================
        START MUSIC
-    ===================================================== */
+    ========================================================= */
 
     window.startMusic =
         function () {
@@ -1287,37 +1469,54 @@
             if (
                 !playerReady ||
                 !player
-            )
+            ) {
+
                 return;
 
-
-            getAudioContext();
-
-
-            player.setVolume(
-                35
-            );
+            }
 
 
-            player.playVideo();
+            try {
+
+                getAudioContext();
 
 
-            playing =
-                true;
+                player.setVolume(
+                    35
+                );
 
 
-            updateMusicUI();
+                player.playVideo();
+
+
+                playing =
+                    true;
+
+
+                updateMusicUI();
+
+                renderPlaylist();
+
+            } catch (
+                error
+            ) {
+
+                console.warn(
+                    "Music start error:",
+                    error
+                );
+
+            }
 
         };
 
 
-    /* =====================================================
+    /* =========================================================
        INIT
-    ===================================================== */
+    ========================================================= */
 
     loadYouTubeAPI();
 
     renderPlaylist();
-
 
 })();
