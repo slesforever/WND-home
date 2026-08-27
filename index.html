@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCHALE // SENSEI PROFILE TERMINAL</title>
+  <title>SCHALE TERMINAL // WND</title>
   <style>
     :root {
       --ba-blue: #00A3FF;
-      --ba-blue-light: #66C8FF;
-      --ba-navy: #0B1B3D;
-      --ba-yellow: #FFC72C;
-      --ba-pink: #FF7FA2;
-      --ba-bg: #EAF4FA;
-      --ba-glass: rgba(255, 255, 255, 0.88);
-      --ba-border: rgba(0, 163, 255, 0.4);
+      --ba-blue-dark: #0077CC;
+      --ba-navy: #0A1D37;
+      --ba-bg: #EAF4FD;
+      --ba-white: #FFFFFF;
+      --ba-pink: #FF5C8D;
+      --ba-yellow: #FFC700;
+      --ba-border: rgba(0, 163, 255, 0.3);
     }
 
     * {
@@ -21,7 +21,7 @@
       margin: 0;
       padding: 0;
       user-select: none;
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
     }
 
     body {
@@ -29,129 +29,136 @@
       height: 100vh;
       overflow: hidden;
       background-color: var(--ba-bg);
-      /* 夏萊終端方格背景 */
+      /* BA 經典斜線與網格微光背景 */
       background-image: 
-        linear-gradient(rgba(0, 163, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 163, 255, 0.06) 1px, transparent 1px);
-      background-size: 24px 24px;
+        repeating-linear-gradient(-45deg, rgba(0, 163, 255, 0.03) 0, rgba(0, 163, 255, 0.03) 15px, transparent 15px, transparent 30px),
+        linear-gradient(rgba(0, 163, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 163, 255, 0.05) 1px, transparent 1px);
+      background-size: 100% 100%, 20px 20px, 20px 20px;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
       color: var(--ba-navy);
     }
 
-    /* 背景畫布：數位方塊與光斑 */
-    #bg-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
+    /* 頂部資源列 (100% 蔚藍檔案風格) */
+    .ba-header {
       width: 100%;
-      height: 100%;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    /* 主應用容器 */
-    .app-container {
-      position: relative;
-      z-index: 10;
-      width: 880px;
-      max-width: 95vw;
-      height: 560px;
-      display: flex;
-      flex-direction: column;
-      perspective: 1000px;
-    }
-
-    /* 夏萊風格頂部列 */
-    .top-bar {
+      height: 52px;
+      background: var(--ba-navy);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 16px;
-      background: var(--ba-navy);
-      color: #fff;
-      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+      padding: 0 24px;
       border-bottom: 3px solid var(--ba-blue);
-      margin-bottom: 8px;
+      color: white;
+      z-index: 100;
     }
 
-    .schale-logo {
+    .schale-brand {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      font-size: 14px;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      font-size: 16px;
+      color: white;
     }
 
-    .schale-logo::before {
+    .schale-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--ba-blue);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .schale-icon::after {
       content: '';
-      display: inline-block;
       width: 10px;
       height: 10px;
       background: var(--ba-yellow);
       transform: rotate(45deg);
     }
 
-    .system-status {
-      font-size: 12px;
-      color: var(--ba-blue-light);
+    /* 右側 AP / 青輝石 / 金幣 狀態 */
+    .top-resources {
       display: flex;
       gap: 16px;
-      font-family: monospace;
+      align-items: center;
     }
 
-    /* 主卡片（玻璃擬態 + 斜切角） */
-    .main-card {
+    .res-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 4px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .res-badge-ap { color: #FFD15C; }
+    .res-badge-pyro { color: #66C8FF; }
+
+    /* 主應用卡片 */
+    .main-viewport {
       flex: 1;
-      background: var(--ba-glass);
-      backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .terminal-card {
+      width: 900px;
+      max-width: 95vw;
+      height: 540px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
       border: 2px solid var(--ba-border);
-      border-radius: 4px;
-      clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
-      box-shadow: 0 16px 40px rgba(0, 163, 255, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 163, 255, 0.15), inset 0 0 0 2px #fff;
       display: flex;
       flex-direction: column;
-      transform-style: preserve-3d;
-      transition: transform 0.15s ease-out;
+      overflow: hidden;
       position: relative;
     }
 
     /* 頂部分頁標籤 */
-    .nav-tabs {
+    .tab-bar {
       display: flex;
-      background: rgba(11, 27, 61, 0.05);
-      border-bottom: 2px solid rgba(0, 163, 255, 0.2);
+      background: #F0F6FA;
+      border-bottom: 2px solid rgba(0, 163, 255, 0.15);
       padding: 0 16px;
     }
 
-    .tab-btn {
-      padding: 14px 28px;
-      background: transparent;
-      border: none;
-      font-weight: 700;
-      color: #6a7b9b;
+    .tab-item {
+      padding: 14px 32px;
+      font-weight: 800;
+      color: #7A8CA8;
       cursor: pointer;
       position: relative;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      transition: all 0.2s ease;
       font-size: 14px;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .tab-btn:hover {
-      color: var(--ba-blue);
-    }
+    .tab-item:hover { color: var(--ba-blue); }
 
-    .tab-btn.active {
+    .tab-item.active {
       color: var(--ba-navy);
-      background: #fff;
+      background: white;
     }
 
-    .tab-btn.active::after {
+    .tab-item.active::after {
       content: '';
       position: absolute;
       bottom: -2px;
@@ -161,293 +168,314 @@
       background: var(--ba-blue);
     }
 
-    .tab-badge {
-      background: var(--ba-pink);
-      color: white;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-weight: bold;
-    }
-
-    /* 內容區域 */
-    .content-container {
+    /* 內容區塊 */
+    .content-body {
       flex: 1;
-      padding: 32px;
       position: relative;
-      overflow: hidden;
+      padding: 32px;
     }
 
     .page {
       position: absolute;
-      top: 32px;
-      left: 32px;
-      right: 32px;
-      bottom: 32px;
+      top: 32px; left: 32px; right: 32px; bottom: 32px;
       opacity: 0;
-      transform: translateX(20px);
-      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-      pointer-events: none;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: all 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
       display: flex;
-      gap: 24px;
+      gap: 32px;
     }
 
     .page.active {
       opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
+      visibility: visible;
+      transform: translateY(0);
     }
 
-    /* 頭像與光環側欄 */
-    .profile-sidebar {
-      width: 200px;
+    /* 左側 WND 老師身分證卡片 */
+    .sensei-id-card {
+      width: 240px;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F4F8FC 100%);
+      border: 2px solid var(--ba-blue);
+      border-radius: 12px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: rgba(255, 255, 255, 0.6);
-      padding: 20px;
-      border: 1px solid rgba(0, 163, 255, 0.2);
-      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0, 163, 255, 0.1);
+      position: relative;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
     }
 
-    .halo-avatar {
-      width: 100px;
-      height: 100px;
+    /* 浮動 Halo (蔚藍檔案靈魂) */
+    .halo-wrapper {
       position: relative;
+      margin-top: 10px;
       margin-bottom: 16px;
     }
 
-    /* 浮動光环 (Halo) */
-    .halo {
+    .halo-ring {
       position: absolute;
-      top: -12px;
+      top: -16px;
       left: 50%;
       transform: translateX(-50%);
       width: 70px;
-      height: 14px;
+      height: 16px;
       border: 3px solid var(--ba-blue);
       border-radius: 50%;
-      box-shadow: 0 0 10px var(--ba-blue);
-      animation: float-halo 3s ease-in-out infinite;
+      box-shadow: 0 0 12px var(--ba-blue);
+      animation: halo-float 2.5s ease-in-out infinite;
     }
 
-    @keyframes float-halo {
+    @keyframes halo-float {
       0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-4px); }
+      50% { transform: translateX(-50%) translateY(-5px); }
     }
 
-    .avatar-img {
-      width: 100%;
-      height: 100%;
+    .avatar-box {
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
-      background: #cbe3f7;
+      background: #D9EFFF;
+      border: 3px solid white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
       display: flex;
       justify-content: center;
       align-items: center;
-      font-weight: bold;
+      font-size: 24px;
+      font-weight: 900;
       color: var(--ba-blue);
-      border: 3px solid #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    /* 詳細資訊區 */
-    .profile-info {
+    .id-tag {
+      background: var(--ba-blue);
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    /* 右側資料點擊填寫區 */
+    .detail-container {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    .title-tag {
-      font-size: 11px;
-      background: var(--ba-blue);
-      color: #fff;
-      padding: 2px 8px;
-      display: inline-block;
-      font-weight: bold;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-
-    h2 {
-      font-size: 24px;
+    .section-title {
+      font-size: 22px;
+      font-weight: 900;
       color: var(--ba-navy);
-      border-bottom: 2px solid var(--ba-blue-light);
-      padding-bottom: 8px;
+      border-bottom: 2px solid var(--ba-blue);
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
     }
 
-    p {
-      line-height: 1.6;
-      color: #4a5a7b;
-      font-size: 14px;
-    }
-
-    /* MomoTalk 聊天氣泡風格 */
-    .momotalk-box {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      box-shadow: 0 4px 12px rgba(0, 163, 255, 0.05);
-      margin-bottom: 12px;
-      position: relative;
-    }
-
-    .momotalk-sender {
+    .section-subtitle {
       font-size: 12px;
+      color: var(--ba-blue);
       font-weight: bold;
+    }
+
+    .placeholder-box {
+      background: white;
+      border: 2px dashed rgba(0, 163, 255, 0.4);
+      border-radius: 8px;
+      padding: 16px;
+      color: #8A9BB3;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* MomoTalk 通訊方塊 */
+    .momotalk-card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 163, 255, 0.2);
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .momotalk-header {
       color: var(--ba-pink);
-      margin-bottom: 4px;
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 6px;
     }
 
-    /* 點擊 Ripple 音效漣漪 */
-    .ripple {
-      position: absolute;
-      border-radius: 50%;
-      border: 2px solid var(--ba-blue);
-      background: rgba(0, 163, 255, 0.1);
-      transform: scale(0);
-      animation: ripple-out 0.5s ease-out forwards;
-      pointer-events: none;
-      z-index: 99;
-    }
-
-    @keyframes ripple-out {
-      to {
-        transform: scale(3);
-        opacity: 0;
-      }
-    }
-
-    /* 音樂控制器按鈕 */
-    .audio-control {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      z-index: 20;
-    }
-
-    .btn-schale {
+    /* 底部操作與音樂按鈕 */
+    .ba-button {
       background: var(--ba-blue);
       color: white;
       border: none;
-      padding: 10px 20px;
-      font-weight: bold;
-      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      padding: 10px 24px;
+      font-weight: 800;
+      font-size: 13px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
       box-shadow: 0 4px 12px rgba(0, 163, 255, 0.3);
+      transition: all 0.15s ease;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .btn-schale:hover {
-      background: #0088d6;
+    .ba-button:hover {
+      background: var(--ba-blue-dark);
+      transform: translateY(-1px);
     }
 
-    .btn-schale:active {
-      transform: scale(0.96);
+    .ba-button:active {
+      transform: translateY(1px);
     }
   </style>
 </head>
 <body>
 
-  <canvas id="bg-canvas"></canvas>
-
-  <div class="app-container" id="app">
-    <!-- 頂部資訊列 -->
-    <div class="top-bar">
-      <div class="schale-logo">SCHALE TACTICAL TERMINAL</div>
-      <div class="system-status">
-        <span>A.R.O.N.A OS v2.4</span>
-        <span id="clock">00:00:00</span>
+  <!-- 1. 蔚藍檔案標誌性頂部欄 -->
+  <header class="ba-header">
+    <div class="schale-brand">
+      <div class="schale-icon"></div>
+      SCHALE OS // OFFICE TERMINAL
+    </div>
+    
+    <div class="top-resources">
+      <div class="res-item">
+        <span class="res-badge-ap">AP</span>
+        <span>120 / 120</span>
+      </div>
+      <div class="res-item">
+        <span style="color: var(--ba-yellow);">💰</span>
+        <span>9,999,999</span>
+      </div>
+      <div class="res-item">
+        <span class="res-badge-pyro">💎</span>
+        <span>24,000</span>
       </div>
     </div>
+  </header>
 
-    <!-- 主面板 -->
-    <div class="main-card" id="card">
-      <nav class="nav-tabs">
-        <button class="tab-btn active" onclick="switchPage(0)">
-          <span>01 SENSEI</span>
-        </button>
-        <button class="tab-btn" onclick="switchPage(1)">
+  <!-- 2. 主視窗容器 -->
+  <main class="main-viewport">
+    <div class="terminal-card">
+      
+      <!-- 頁籤選單 -->
+      <nav class="tab-bar">
+        <div class="tab-item active" onclick="switchTab(0)">
+          <span>01 PROFILE</span>
+        </div>
+        <div class="tab-item" onclick="switchTab(1)">
           <span>02 MOMOTALK</span>
-          <span class="tab-badge">1</span>
-        </button>
-        <button class="tab-btn" onclick="switchPage(2)">
+        </div>
+        <div class="tab-item" onclick="switchTab(2)">
           <span>03 ARCHIVE</span>
-        </button>
+        </div>
       </nav>
 
-      <div class="content-container">
-        <!-- 頁面 1: 老師個人檔案 -->
+      <!-- 內容視窗區 -->
+      <div class="content-body">
+        
+        <!-- PAGE 1: 個人檔案 (WND) -->
         <div class="page active">
-          <div class="profile-sidebar">
-            <div class="halo-avatar">
-              <div class="halo"></div>
-              <div class="avatar-img">SLES</div>
+          <div class="sensei-id-card">
+            <div class="halo-wrapper">
+              <div class="halo-ring"></div>
+              <div class="avatar-box">WND</div>
             </div>
-            <span class="title-tag">SCHALE</span>
-            <strong style="margin-top: 8px; font-size: 14px;">Sles 老師</strong>
-            <span style="font-size: 11px; color: #8a9bbd;">聯邦搜查社</span>
+            <span class="id-tag">TEACHER</span>
+            <strong style="font-size: 18px; margin-top: 4px;">WND 老師</strong>
+            <span style="font-size: 11px; color: #8A9BB3; margin-top: 2px;">聯邦搜查社 SCHALE</span>
           </div>
-          <div class="profile-info">
-            <div>
-              <span class="title-tag">TEACHER PROFILE</span>
-              <h2>夏萊主管個人檔案</h2>
-            </div>
-            <p>歡迎回到夏萊辦公室，老師。阿羅娜已備妥奇普托斯今日的各項數據與通訊紀錄。</p>
-            <p>目前系統運作率 100%，已連接至地下地下室數據庫。隨時可以進行系統檢索與劇本編撰。</p>
-          </div>
-        </div>
 
-        <!-- 頁面 2: MomoTalk 風格通訊 -->
-        <div class="page">
-          <div class="profile-info" style="width: 100%;">
-            <div>
-              <span class="title-tag" style="background: var(--ba-pink);">MOMOTALK MESSAGES</span>
-              <h2>最新通訊紀錄</h2>
+          <div class="detail-container">
+            <div class="section-title">
+              <span>SENSEI PROFILE</span>
+              <span class="section-subtitle">SCHALE DATABASE</span>
             </div>
-            <div class="momotalk-box">
-              <div class="momotalk-sender">ARONA (主系統)</div>
-              <p>老師！今天的日程準備好了嗎？不要忘記審核遊戲開發部的最新企劃案喔！( • ̀ω•́ )</p>
+
+            <!-- 請在此處填寫 WND 的簡介 -->
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-blue);">[ 個人簡介 / PROFILE ]</strong><br>
+              可以在這裡填寫 WND 的個人介紹、職稱或是個人標語...<br>
+              （例如：聯邦搜查社顧問老師 / 遊戲開發者 / 腳本工程師）
             </div>
-            <div class="momotalk-box">
-              <div class="momotalk-sender" style="color: var(--ba-blue);">PLANA (系統支援)</div>
-              <p>草稿備份已自動上傳至雲端伺服器。音效與介面模組運行穩定。</p>
+
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-blue);">[ 核心技能 / SKILLS ]</strong><br>
+              可以在這裡填寫主要專長，例如：Luau / Front-End / Game Design
             </div>
           </div>
         </div>
 
-        <!-- 頁面 3: 作品檔案庫 -->
+        <!-- PAGE 2: MomoTalk 風格資訊區 -->
         <div class="page">
-          <div class="profile-info" style="width: 100%;">
-            <div>
-              <span class="title-tag">DATABASE</span>
-              <h2>奇普托斯檔案庫</h2>
+          <div class="detail-container" style="width: 100%;">
+            <div class="section-title">
+              <span style="color: var(--ba-pink);">MOMOTALK MESSAGES</span>
+              <span class="section-subtitle">UNREAD: 1</span>
             </div>
-            <p>▸ 遊戲開發與 Luau 腳本邏輯庫</p>
-            <p>▸ 前端 UI / Web Audio 音效開發模組</p>
-            <p>▸ 黑暗風格故事與中世紀英雄企劃案</p>
+
+            <!-- MomoTalk 對話框 1 -->
+            <div class="momotalk-card">
+              <div class="momotalk-header">ARONA (主系統)</div>
+              <p style="font-size: 14px; color: #4A5A7B;">
+                [ 訊息欄位 01 ] 老師！歡迎登入系統。可以在此填寫給 WND 的留言或系統提示訊息！
+              </p>
+            </div>
+
+            <!-- MomoTalk 對話框 2 -->
+            <div class="momotalk-card">
+              <div class="momotalk-header" style="color: var(--ba-blue);">PLANA</div>
+              <p style="font-size: 14px; color: #4A5A7B;">
+                [ 訊息欄位 02 ] 預留位置，可隨時修改內容。
+              </p>
+            </div>
           </div>
         </div>
+
+        <!-- PAGE 3: 專案與作品歸檔區 -->
+        <div class="page">
+          <div class="detail-container" style="width: 100%;">
+            <div class="section-title">
+              <span>WORK ARCHIVE</span>
+              <span class="section-subtitle">TOTAL RECORDS: 3</span>
+            </div>
+
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-navy);">▸ 專案紀錄 01：[ 填入專案名稱 ]</strong><br>
+              可以在這裡填入專案細節與連結。
+            </div>
+
+            <div class="placeholder-box">
+              <strong style="color: var(--ba-navy);">▸ 專案紀錄 02：[ 填入專案名稱 ]</strong><br>
+              可以在這裡填入專案細節與連結。
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- 音樂開關按鈕 -->
-      <div class="audio-control">
-        <button class="btn-schale" onclick="toggleBgm()">
+      <!-- 底部右側 BGM 控制鈕 -->
+      <div style="position: absolute; bottom: 20px; right: 20px;">
+        <button class="ba-button" onclick="toggleBgm()">
           <span id="bgm-icon">♪</span> BGM SYSTEM
         </button>
       </div>
+
     </div>
-  </div>
+  </main>
 
   <script>
-    // --- 1. Web Audio API 音效合成器 (蔚藍檔案 MomoTalk & 科技 UI 聲) ---
+    // --- Web Audio API: 100% 蔚藍檔案標誌性點擊音效 ---
     let audioCtx = null;
-    let isBgmPlaying = false;
     let bgmAudio = null;
+    let isBgmPlaying = false;
 
     function initAudio() {
       if (!audioCtx) {
@@ -455,7 +483,8 @@
       }
     }
 
-    function playSfx(type) {
+    // 播放清脆的 MomoTalk / BA 按鈕聲
+    function playSfx(type = 'click') {
       initAudio();
       if (!audioCtx) return;
 
@@ -467,19 +496,18 @@
       gain.connect(audioCtx.destination);
 
       if (type === 'click') {
-        // 清亮高頻 UI 點擊聲
+        // BA 經典 UI 高頻點擊聲
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(1400, now);
-        osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
+        osc.frequency.setValueAtTime(1600, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.03);
         
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
         
         osc.start(now);
-        osc.stop(now + 0.04);
-
-      } else if (type === 'momotalk') {
-        // 經典 MomoTalk 雙音階提示音 (C6 -> G6)
+        osc.stop(now + 0.03);
+      } else if (type === 'tab') {
+        // 切換 Tab 時的 MomoTalk 雙音階 (C6 -> E6)
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
         osc2.connect(gain2);
@@ -488,30 +516,39 @@
         osc.type = 'sine';
         osc2.type = 'sine';
 
-        // 第一音
-        osc.frequency.setValueAtTime(1046.5, now); // C6
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.frequency.setValueAtTime(1046.5, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
 
-        // 第二音
-        osc2.frequency.setValueAtTime(1567.98, now + 0.06); // G6
-        gain2.gain.setValueAtTime(0.15, now + 0.06);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc2.frequency.setValueAtTime(1318.5, now + 0.04);
+        gain2.gain.setValueAtTime(0.12, now + 0.04);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
         osc.start(now);
-        osc.stop(now + 0.08);
-        osc2.start(now + 0.06);
-        osc2.stop(now + 0.26);
+        osc.stop(now + 0.05);
+        osc2.start(now + 0.04);
+        osc2.stop(now + 0.19);
       }
     }
 
+    // 分頁切換
+    function switchTab(index) {
+      playSfx('tab');
+      const tabs = document.querySelectorAll('.tab-item');
+      const pages = document.querySelectorAll('.page');
+
+      tabs.forEach((t, i) => t.classList.toggle('active', i === index));
+      pages.forEach((p, i) => p.classList.toggle('active', i === index));
+    }
+
+    // BGM 開關
     function toggleBgm() {
-      playSfx('momotalk');
+      playSfx('click');
       if (!bgmAudio) {
-        // 使用預設 Blue Archive 風格輕快背景音樂線路上源（可自訂替換）
+        // 使用風格相符的輕快活潑曲風音訊源
         bgmAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3');
         bgmAudio.loop = true;
-        bgmAudio.volume = 0.3;
+        bgmAudio.volume = 0.25;
       }
 
       if (isBgmPlaying) {
@@ -525,92 +562,8 @@
       }
     }
 
-    // --- 2. 頁面切換邏輯 ---
-    function switchPage(index) {
-      playSfx('click');
-      const tabs = document.querySelectorAll('.tab-btn');
-      const pages = document.querySelectorAll('.page');
-
-      tabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
-      pages.forEach((page, i) => page.classList.toggle('active', i === index));
-    }
-
-    // --- 3. 3D 卡片傾斜與點擊 Ripple 動畫 ---
-    const card = document.getElementById('card');
-    document.addEventListener('mousemove', (e) => {
-      const { innerWidth, innerHeight } = window;
-      const x = (e.clientX - innerWidth / 2) / (innerWidth / 2);
-      const y = (e.clientY - innerHeight / 2) / (innerHeight / 2);
-      card.style.transform = `rotateY(${x * 4}deg) rotateX(${-y * 4}deg)`;
-    });
-
-    document.addEventListener('click', (e) => {
-      initAudio();
-      const ripple = document.createElement('div');
-      ripple.className = 'ripple';
-      ripple.style.left = `${e.clientX - 25}px`;
-      ripple.style.top = `${e.clientY - 25}px`;
-      ripple.style.width = '50px';
-      ripple.style.height = '50px';
-      document.body.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 500);
-    });
-
-    // --- 4. Canvas 蔚藍粒子（數位天藍方塊與柔光） ---
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    for (let i = 0; i < 40; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 6 + 2,
-        speedY: -(Math.random() * 0.8 + 0.2),
-        speedX: (Math.random() - 0.5) * 0.5,
-        opacity: Math.random() * 0.5 + 0.2,
-        isSquare: Math.random() > 0.4
-      });
-    }
-
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        if (p.y < -10) p.y = canvas.height + 10;
-        if (p.x < -10 || p.x > canvas.width + 10) p.x = Math.random() * canvas.width;
-
-        ctx.fillStyle = p.isSquare 
-          ? `rgba(0, 163, 255, ${p.opacity})` 
-          : `rgba(255, 255, 255, ${p.opacity + 0.2})`;
-
-        if (p.isSquare) {
-          ctx.fillRect(p.x, p.y, p.size, p.size);
-        } else {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-      requestAnimationFrame(animateParticles);
-    }
-    animateParticles();
-
-    // --- 5. 即時時鐘 ---
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+    // 全局點擊播放點擊音效
+    document.addEventListener('click', () => initAudio(), { once: true });
   </script>
 </body>
 </html>
