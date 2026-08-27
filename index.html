@@ -3,18 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCHALE TERMINAL // WND</title>
-  <!-- YouTube API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
-  
+  <title>TERMINAL // WND</title>
   <style>
     :root {
-      --ba-blue: #00A3FF;
-      --ba-blue-dark: #0077CC;
-      --ba-navy: #0A1D37;
-      --ba-pink: #FF5C8D;
-      --ba-yellow: #FFC700;
-      --ba-border: rgba(0, 163, 255, 0.35);
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.4);
+      --dark-navy: #09111e;
+      --card-bg: rgba(13, 22, 38, 0.65);
+      --card-border: rgba(255, 255, 255, 0.18);
+      --text-main: #ffffff;
+      --text-sub: #8da3c0;
     }
 
     * {
@@ -22,154 +20,192 @@
       margin: 0;
       padding: 0;
       user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
     }
 
     body {
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      /* 背景使用指定夕陽圖 (如果本地有圖片亦可寫 url('maxresdefault.jpg') ) */
       background: url('maxresdefault.jpg') center/cover no-repeat fixed;
       display: flex;
       flex-direction: column;
-      color: var(--ba-navy);
+      color: var(--text-main);
       position: relative;
     }
 
-    /* 背景暗化遮罩，提升 UI 對比度 */
+    /* 背景質感微暗化與網格濾鏡 */
     body::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(10, 29, 55, 0.25);
+      inset: 0;
+      background: rgba(8, 12, 20, 0.35);
+      backdrop-filter: brightness(0.9) contrast(1.05);
       z-index: 0;
     }
 
     /* ==========================================
-       1. 蔚藍檔案開機動畫 (Boot Screen)
+       1. 酷炫科技風開機畫面 (Boot Screen)
        ========================================== */
     #boot-screen {
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(10, 23, 42, 0.75);
-      backdrop-filter: blur(15px);
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(13, 22, 38, 0.85) 0%, rgba(5, 9, 15, 0.96) 100%);
+      backdrop-filter: blur(25px);
       z-index: 9999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #boot-screen.fade-out {
       opacity: 0;
-      transform: scale(1.08);
+      transform: scale(1.12);
       pointer-events: none;
     }
 
-    .boot-halo-container {
+    /* 掃描線與中央光環效果 */
+    .scanline {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(0, 240, 255, 0.03) 51%);
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    .tech-core {
       position: relative;
-      margin-bottom: 24px;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30px;
     }
 
-    .boot-halo {
-      width: 120px;
-      height: 30px;
-      border: 5px solid var(--ba-blue);
+    .ring {
+      position: absolute;
       border-radius: 50%;
-      box-shadow: 0 0 25px var(--ba-blue), inset 0 0 10px var(--ba-blue);
-      animation: boot-halo-spin 4s ease-in-out infinite;
+      border: 2px solid transparent;
+      transition: all 0.5s ease;
     }
 
-    @keyframes boot-halo-spin {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(5deg); }
+    .ring-outer {
+      inset: 0;
+      border-top-color: var(--cyan);
+      border-bottom-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+      animation: spin 6s linear infinite;
+    }
+
+    .ring-inner {
+      inset: 15px;
+      border-left-color: rgba(255, 255, 255, 0.6);
+      border-right-color: rgba(255, 255, 255, 0.6);
+      animation: spin-reverse 4s linear infinite;
+    }
+
+    .core-dot {
+      width: 16px;
+      height: 16px;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 15px var(--cyan);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+    @keyframes pulse { 0%, 100% { transform: scale(0.85); opacity: 0.6; } 50% { transform: scale(1.2); opacity: 1; } }
+
+    .boot-text-container {
+      text-align: center;
+      z-index: 2;
     }
 
     .boot-title {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 900;
-      letter-spacing: 4px;
-      color: #FFFFFF;
-      text-align: center;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffffff 0%, #8da3c0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
-      text-shadow: 0 0 12px rgba(0, 163, 255, 0.6);
     }
 
-    .boot-subtitle {
+    .boot-status {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--cyan);
+      opacity: 0.8;
+      margin-bottom: 40px;
+      font-family: monospace;
+    }
+
+    .start-btn {
+      padding: 12px 36px;
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--ba-blue);
-      margin-bottom: 48px;
+      letter-spacing: 3px;
+      color: #ffffff;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid var(--cyan);
+      border-radius: 4px;
+      box-shadow: 0 0 15px var(--cyan-glow);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
 
-    .touch-to-start {
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      color: var(--ba-blue-dark);
-      padding: 12px 36px;
-      border: 2px solid var(--ba-blue);
-      border-radius: 30px;
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 0 20px rgba(0, 163, 255, 0.4);
-      animation: touch-pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes touch-pulse {
-      0%, 100% { opacity: 0.5; transform: scale(0.98); }
-      50% { opacity: 1; transform: scale(1.02); }
+    #boot-screen:hover .start-btn {
+      background: var(--cyan);
+      color: var(--dark-navy);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
     }
 
     /* ==========================================
-       2. 夏萊主面板 (Main UI)
+       2. 主面板介面 (Main UI)
        ========================================== */
-    .ba-header {
+    .top-bar {
       width: 100%;
-      height: 52px;
-      background: rgba(10, 29, 55, 0.85);
-      backdrop-filter: blur(10px);
+      height: 48px;
+      background: rgba(9, 17, 30, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 24px;
-      border-bottom: 3px solid var(--ba-blue);
-      color: white;
+      padding: 0 28px;
       z-index: 10;
     }
 
-    .schale-brand {
+    .brand-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.9);
       display: flex;
       align-items: center;
       gap: 10px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      font-size: 15px;
     }
 
-    .schale-icon {
-      width: 24px; height: 24px;
-      background: var(--ba-blue);
-      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-      display: flex; justify-content: center; align-items: center;
-    }
-
-    .schale-icon::after {
+    .brand-title::before {
       content: '';
-      width: 10px; height: 10px;
-      background: var(--ba-yellow);
-      transform: rotate(45deg);
+      width: 6px; height: 6px;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      border-radius: 50%;
     }
 
-    .header-status {
-      font-size: 12px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      color: #66C8FF;
+    .sys-info {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-sub);
     }
 
     .main-viewport {
@@ -177,19 +213,19 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 24px;
       z-index: 10;
     }
 
-    .terminal-card {
-      width: 900px;
+    .glass-card {
+      width: 880px;
       max-width: 95vw;
-      height: 540px;
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(20px);
-      border: 2px solid var(--ba-border);
-      border-radius: 16px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), inset 0 0 0 2px #fff;
+      height: 520px;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -198,48 +234,51 @@
 
     .tab-bar {
       display: flex;
-      background: rgba(240, 246, 250, 0.8);
-      border-bottom: 2px solid rgba(0, 163, 255, 0.15);
-      padding: 0 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0 12px;
     }
 
     .tab-item {
-      padding: 14px 32px;
-      font-weight: 800;
-      color: #7A8CA8;
+      padding: 16px 28px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-sub);
       cursor: pointer;
       position: relative;
-      font-size: 14px;
-      letter-spacing: 1px;
+      transition: all 0.2s ease;
     }
 
+    .tab-item:hover { color: #ffffff; }
+
     .tab-item.active {
-      color: var(--ba-navy);
-      background: white;
+      color: var(--cyan);
     }
 
     .tab-item.active::after {
       content: '';
       position: absolute;
-      bottom: -2px; left: 0;
-      width: 100%; height: 3px;
-      background: var(--ba-blue);
+      bottom: -1px; left: 0; right: 0;
+      height: 2px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
     }
 
     .content-body {
       flex: 1;
       position: relative;
-      padding: 32px;
+      padding: 28px;
     }
 
     .page {
       position: absolute;
-      top: 32px; left: 32px; right: 32px; bottom: 32px;
+      inset: 28px;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.25s ease;
+      transition: all 0.3s ease;
       display: flex;
-      gap: 32px;
+      gap: 28px;
     }
 
     .page.active {
@@ -247,39 +286,42 @@
       visibility: visible;
     }
 
-    /* 左側 WND 卡片 */
-    .sensei-id-card {
-      width: 240px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(244,248,252,0.95) 100%);
-      border: 2px solid var(--ba-blue);
-      border-radius: 12px;
-      padding: 20px;
+    /* 個人資料面板 */
+    .user-profile-box {
+      width: 220px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 24px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
-      box-shadow: 0 4px 15px rgba(0, 163, 255, 0.1);
     }
 
-    .avatar-box {
-      width: 80px; height: 80px;
+    .avatar-ring {
+      width: 72px; height: 72px;
       border-radius: 50%;
-      background: #D9EFFF;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 15px var(--cyan-glow);
       display: flex; justify-content: center; align-items: center;
-      font-size: 22px; font-weight: 900;
-      color: var(--ba-blue);
-      margin-bottom: 12px;
-      border: 3px solid white;
+      font-size: 20px; font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 16px;
+      background: rgba(0, 240, 255, 0.05);
     }
 
-    .id-tag {
-      background: var(--ba-blue);
-      color: white;
-      font-size: 11px;
+    .user-name {
+      font-size: 18px;
       font-weight: 800;
-      padding: 2px 10px;
-      border-radius: 4px;
-      margin-bottom: 6px;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--cyan);
+      font-family: monospace;
+      letter-spacing: 1px;
     }
 
     .detail-container {
@@ -289,48 +331,44 @@
       gap: 16px;
     }
 
-    .section-title {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--ba-navy);
-      border-bottom: 2px solid var(--ba-blue);
-      padding-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-
     .placeholder-box {
-      background: rgba(255, 255, 255, 0.9);
-      border: 2px dashed rgba(0, 163, 255, 0.4);
-      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
       padding: 16px;
-      color: #7A8CA8;
-      font-size: 14px;
+      color: var(--text-sub);
+      font-size: 13px;
       line-height: 1.6;
     }
 
-    .ba-button {
-      background: var(--ba-blue);
-      color: white;
-      border: none;
-      padding: 10px 24px;
-      font-weight: 800;
-      border-radius: 6px;
+    /* 音樂控制鈕 */
+    .audio-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--cyan);
+      color: #ffffff;
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 4px;
       cursor: pointer;
-      display: flex; align-items: center; gap: 8px;
-      box-shadow: 0 4px 12px rgba(0, 163, 255, 0.3);
-      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
     }
 
-    .ba-button:hover {
-      background: var(--ba-blue-dark);
+    .audio-btn:hover {
+      background: var(--cyan);
+      color: var(--dark-navy);
     }
 
-    /* 隱藏的 YouTube Player 容器 */
     #yt-player-container {
       position: absolute;
-      width: 1px; height: 1px;
+      width: 0; height: 0;
       opacity: 0;
       pointer-events: none;
     }
@@ -338,217 +376,90 @@
 </head>
 <body>
 
-  <!-- 隱藏的 YouTube Player 播放器 -->
+  <!-- YouTube 播放器容器 -->
   <div id="yt-player-container">
     <div id="yt-player"></div>
   </div>
 
-  <!-- 1. 開機動畫畫面 -->
-  <div id="boot-screen" onclick="startTerminal()">
-    <div class="boot-halo-container">
-      <div class="boot-halo"></div>
+  <!-- 1. 酷炫開機動畫 -->
+  <div id="boot-screen">
+    <div class="scanline"></div>
+    <div class="tech-core">
+      <div class="ring ring-outer"></div>
+      <div class="ring ring-inner"></div>
+      <div class="core-dot"></div>
     </div>
-    <div class="boot-title">BLUE ARCHIVE</div>
-    <div class="boot-subtitle">SCHALE OS // WND SYSTEM CONNECTING</div>
-    <div class="touch-to-start">- TOUCH TO START -</div>
+    <div class="boot-text-container">
+      <div class="boot-title">TERMINAL OS</div>
+      <div class="boot-status">[ USER: WND // SYSTEM READY ]</div>
+      <button class="start-btn" onclick="startSystem()">INITIALIZE</button>
+    </div>
   </div>
 
-  <!-- 2. 主頁面 Header -->
-  <header class="ba-header">
-    <div class="schale-brand">
-      <div class="schale-icon"></div>
-      SCHALE OS // OFFICE TERMINAL
-    </div>
-    
-    <div class="header-status">
-      SYSTEM STATUS: <span style="color: #00FF87;">ONLINE</span>
-    </div>
+  <!-- 2. 頂部資訊列 -->
+  <header class="top-bar">
+    <div class="brand-title">TERMINAL // WND</div>
+    <div class="sys-info">STATUS: ONLINE</div>
   </header>
 
-  <!-- 3. 主內容視窗 -->
+  <!-- 3. 主面板 -->
   <main class="main-viewport">
-    <div class="terminal-card">
+    <div class="glass-card">
       <nav class="tab-bar">
         <div class="tab-item active" onclick="switchTab(0)">01 PROFILE</div>
-        <div class="tab-item" onclick="switchTab(1)">02 MOMOTALK</div>
+        <div class="tab-item" onclick="switchTab(1)">02 MESSAGES</div>
         <div class="tab-item" onclick="switchTab(2)">03 ARCHIVE</div>
       </nav>
 
       <div class="content-body">
-        <!-- PAGE 1: Profile -->
+        <!-- 頁面 1: 個人檔案 -->
         <div class="page active">
-          <div class="sensei-id-card">
-            <div class="avatar-box">WND</div>
-            <span class="id-tag">TEACHER</span>
-            <strong style="font-size: 18px; margin-top: 4px;">WND 老師</strong>
-            <span style="font-size: 11px; color: #8A9BB3; margin-top: 2px;">SCHALE</span>
+          <div class="user-profile-box">
+            <div class="avatar-ring">WND</div>
+            <div class="user-name">WND</div>
+            <div class="user-role">// USER PROFILE</div>
           </div>
           <div class="detail-container">
-            <div class="section-title">
-              <span>SENSEI PROFILE</span>
-              <span style="font-size: 12px; color: var(--ba-blue);">SCHALE DATABASE</span>
+            <div class="placeholder-box">
+              <strong style="color: var(--cyan);">[ 個人簡介 / OVERVIEW ]</strong><br>
+              請在此處填寫 WND 的個人介紹...
             </div>
             <div class="placeholder-box">
-              <strong style="color: var(--ba-blue);">[ 個人簡介 / PROFILE ]</strong><br>
-              請在此填寫 WND 的個人介紹...
-            </div>
-            <div class="placeholder-box">
-              <strong style="color: var(--ba-blue);">[ 專長領域 / SKILLS ]</strong><br>
+              <strong style="color: var(--cyan);">[ 專長領域 / SKILLS ]</strong><br>
               預留技能專長介紹位置...
             </div>
           </div>
         </div>
 
-        <!-- PAGE 2: MomoTalk -->
+        <!-- 頁面 2: 訊息區 -->
         <div class="page">
           <div class="detail-container" style="width: 100%;">
-            <div class="section-title">
-              <span style="color: var(--ba-pink);">MOMOTALK MESSAGES</span>
-              <span style="font-size: 12px; color: var(--ba-blue);">UNREAD: 1</span>
-            </div>
             <div class="placeholder-box">
-              [ MomoTalk 內容預留位置 ]
+              <strong style="color: var(--cyan);">[ 訊息與留言 / MESSAGES ]</strong><br>
+              預留訊息與對話內容區塊...
             </div>
           </div>
         </div>
 
-        <!-- PAGE 3: Archive -->
+        <!-- 頁面 3: 作品庫 -->
         <div class="page">
           <div class="detail-container" style="width: 100%;">
-            <div class="section-title">
-              <span>WORK ARCHIVE</span>
-              <span style="font-size: 12px; color: var(--ba-blue);">TOTAL: 0</span>
-            </div>
             <div class="placeholder-box">
-              [ 專案與作品紀錄預留位置 ]
+              <strong style="color: var(--cyan);">[ 專案歸檔 / WORK ARCHIVE ]</strong><br>
+              預留作品與專案紀錄位置...
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 右下角音樂控制鈕 -->
-      <div style="position: absolute; bottom: 20px; right: 20px;">
-        <button class="ba-button" onclick="toggleBgm()">
-          <span id="bgm-icon">♪</span> BGM SYSTEM
-        </button>
-      </div>
+      <button class="audio-btn" onclick="toggleBgm()">
+        <span id="bgm-icon">♪</span> BGM CONTROL
+      </button>
     </div>
   </main>
 
-  <script>
-    let audioCtx = null;
-    let ytPlayer = null;
-    let isBgmPlaying = false;
-
-    // 載入 YouTube API 並初始化目標影片 (eMqWJDP28p8)
-    function onYouTubeIframeAPIReady() {
-      ytPlayer = new YT.Player('yt-player', {
-        height: '0',
-        width: '0',
-        videoId: 'eMqWJDP28p8',
-        playerVars: {
-          'autoplay': 0,
-          'controls': 0,
-          'loop': 1,
-          'playlist': 'eMqWJDP28p8'
-        }
-      });
-    }
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-    }
-
-    // 啟動閃爍音效 (C6 -> E6 -> G6 -> C7)
-    function playStartSound() {
-      initAudio();
-      if (!audioCtx) return;
-
-      const now = audioCtx.currentTime;
-      const freqs = [1046.5, 1318.5, 1567.98, 2093.0];
-      freqs.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.06);
-        gain.gain.setValueAtTime(0.12, now + idx * 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.3);
-
-        osc.start(now + idx * 0.06);
-        osc.stop(now + idx * 0.06 + 0.3);
-      });
-    }
-
-    // UI 按鍵音效
-    function playSfx() {
-      initAudio();
-      if (!audioCtx) return;
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1400, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
-
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-
-      osc.start(now);
-      osc.stop(now + 0.04);
-    }
-
-    // 開機按鈕觸發
-    function startTerminal() {
-      playStartSound();
-
-      // 播放 YouTube 背景音樂
-      if (ytPlayer && ytPlayer.playVideo) {
-        ytPlayer.playVideo();
-        isBgmPlaying = true;
-        document.getElementById('bgm-icon').innerText = '❚❚';
-      }
-
-      // 淡出開機畫面
-      const bootScreen = document.getElementById('boot-screen');
-      bootScreen.classList.add('fade-out');
-      setTimeout(() => {
-        bootScreen.style.display = 'none';
-      }, 800);
-    }
-
-    // 頁籤切換
-    function switchTab(index) {
-      playSfx();
-      const tabs = document.querySelectorAll('.tab-item');
-      const pages = document.querySelectorAll('.page');
-      tabs.forEach((t, i) => t.classList.toggle('active', i === index));
-      pages.forEach((p, i) => p.classList.toggle('active', i === index));
-    }
-
-    // 音樂暫停 / 播放手動開關
-    function toggleBgm() {
-      playSfx();
-      if (!ytPlayer) return;
-
-      if (isBgmPlaying) {
-        ytPlayer.pauseVideo();
-        isBgmPlaying = false;
-        document.getElementById('bgm-icon').innerText = '♪';
-      } else {
-        ytPlayer.playVideo();
-        isBgmPlaying = true;
-        document.getElementById('bgm-icon').innerText = '❚❚';
-      }
-    }
-  </script>
+  <!-- 引用外部腳本 -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="app.js"></script>
 </body>
 </html>
